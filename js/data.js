@@ -67,7 +67,11 @@ export const WEATHERS = [
   ['Heatwave', 'burnt out', '#E0663A', '<circle cx="12" cy="9" r="3.5"/><path d="M12 2.5v1.5M5.5 9H7M17 9h1.5M7.4 4.4l1 1M16.6 4.4l-1 1M4 17c2-1.5 4 1.5 6 0s4 1.5 6 0 3 .5 4 0M4 21c2-1.5 4 1.5 6 0s4 1.5 6 0 3 .5 4 0"/>', 'Too much pressure. Water and shade first.', 'nightwatch'],
   ['Snow / still', 'quiet, frozen', '#8FA9C7', '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/>', 'Very still today. Blankets count as plans.', 'asleep'],
   ['Rainbow', 'relief', '#C77BD6', '<path d="M3 18a9 9 0 0 1 18 0M6.5 18a5.5 5.5 0 0 1 11 0M10 18a2 2 0 0 1 4 0"/>', 'After all that. Look at you.', 'cheer'],
-  ['Clear night', 'calm, peaceful', '#3C4A8A', '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6z"/>', 'Calm and quiet. Stay a while.', 'nightwatch']
+  ['Clear night', 'calm, peaceful', '#3C4A8A', '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6z"/>', 'Calm and quiet. Stay a while.', 'nightwatch'],
+  ['Angry', 'angry, furious', '#C23B2E', '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>', 'That fire is real. Breathe first, then decide what to do with it.', 'standing'],
+  ['Lonely', 'lonely, missing people', '#6B6F9E', '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', 'Missing people is heavy. I\'m here, and I\'m not going anywhere.', 'nightwatch'],
+  ['Stressed', 'stressed, too much on', '#B0457A', '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'Too many tabs open in there. One thing at a time is plenty.', 'standing'],
+  ['Annoyed', 'annoyed, irritated', '#C9792B', '<circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/>', 'Ugh, that\'s irritating. You\'re allowed to be fed up.', 'standing']
 ];
 export const weatherByName = n => WEATHERS.find(w => w[0] === n);
 
