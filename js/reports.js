@@ -1,4 +1,4 @@
-// Reports as PDFs: the sleep diary (for your doctor) and the weekly / monthly food report.
+
 import { get, today, addDays, parseKey, dateKey } from './store.js';
 import { esc, openSheet, closeSheet, toast, him, IOS, canShareFile, saveToDevice, SAVED_NOTE } from './ui.js';
 import { loadArt, fontsReady } from './cards.js';
@@ -11,7 +11,16 @@ const median = a => { if (!a.length) return null; const s = a.slice().sort((x, y
 const round = (v, dp) => { const k = Math.pow(10, dp || 0); return (Math.round(v * k) / k).toLocaleString(); };
 const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
 
-// the big title block on the first page
+// Show the time honestly when it was recorded as approximate.
+const sleepTime = (r, side) => {
+  const ts = side === 'start' ? r.start : r.end;
+  const approximate = side === 'start' ? r.startApprox : r.endApprox;
+  return (approximate ? 'Around ' : '') + clock(ts);
+};
+const sleepDuration = r =>
+  (r.startApprox || r.endApprox ? 'About ' : '') + dur((r.end - r.start) / 60000);
+
+// The big title block on the first page.
 function cover(doc, kicker, title, sub, img) {
   const g = doc.g;
   g.fillStyle = BLUE; rr(g, M, M, PW - 2 * M, 300, 34); g.fill();
@@ -34,18 +43,15 @@ export async function sleepDiary(from, to) {
   const doc = new Doc('Sleep diary', range(from, to));
   cover(doc, 'SLEEP DIARY' + (name ? ' · ' + name.toUpperCase() : ''), 'How I\'ve slept', range(from, to), art.nightwatch);
 
-  // the summary: typical values, not scores
   const byDay = {}; rests.forEach(r => { (byDay[r.date] = byDay[r.date] || []).push(r); });
   const dKeys = Object.keys(byDay).sort();
   const totals = dKeys.map(d => byDay[d].reduce((n, r) => n + (r.end - r.start) / 60000, 0));
-  const mains = dKeys.map(d => byDay[d].slice().sort((a, b) => (b.end - b.start) - (a.end - a.start))[0]);
   const minsOf = (ts, shift) => { const x = new Date(ts); let m = x.getHours() * 60 + x.getMinutes(); if (shift && m < 12 * 60) m += 24 * 60; return m; };
   const fmtMins = m => { m = Math.round(m) % (24 * 60); const d = new Date(2000, 0, 1, Math.floor(m / 60), m % 60); return clock(d.getTime()); };
   const naps = rests.filter(r => { const h = new Date(r.start).getHours(); return h >= 9 && h < 18; }).length;
   const tiles = [];
   if (dKeys.length) tiles.push([dKeys.length, dKeys.length === 1 ? 'day with sleep logged' : 'days with sleep logged']);
   if (totals.length) tiles.push([dur(median(totals)), 'typical sleep in a day']);
-  // night sleep: the rests that start between 6 pm and 9 am. Asleep = the first of them, up = the end of the last
   const nightOf = d => byDay[d].filter(r => { const h = new Date(r.start).getHours(); return h >= 18 || h < 9; }).sort((a, b) => a.start - b.start);
   const nights = dKeys.map(nightOf).filter(n => n.length);
   if (nights.length) tiles.push([fmtMins(median(nights.map(n => minsOf(n[0].start, true)))), 'usually asleep around']);
@@ -54,7 +60,6 @@ export async function sleepDiary(from, to) {
   doc.tiles(tiles, { big: 48 });
   if (naps) doc.para('Daytime rests (between 9 am and 6 pm): ' + naps + '.', '700 22px ' + BODY, SOFT);
 
-  // week by week (v47): is it changing? One row per week (Monday to Sunday) that has sleep logged, only when there are two or more
   const mondayOf = d => { const x = parseKey(d); return addDays(d, -((x.getDay() + 6) % 7)); };
   const weeks = []; dKeys.forEach((d, i) => { const w = mondayOf(d); let k = weeks.find(z => z.w === w); if (!k) weeks.push(k = { w, days: [], nights: [] }); k.days.push(totals[i]); const n = byDay[d].filter(r => { const h = new Date(r.start).getHours(); return h < 9 || h >= 18; }).reduce((a, r) => a + (r.end - r.start) / 60000, 0); if (n) k.nights.push(n); });
   if (weeks.length > 1) {
@@ -79,7 +84,6 @@ export async function sleepDiary(from, to) {
       txt(g, dur(median(k.days)), x, y + 45, '800 24px ' + BODY, BLUE); x += cols[1];
       txt(g, k.nights.length ? dur(median(k.nights)) : 'naps only', x, y + 45, '700 22px ' + BODY, INK); x += cols[2];
       txt(g, wd ? plural(wd, 'night', 'nights') : 'none noted', x, y + 45, '700 22px ' + BODY, wd ? INK : SOFT);
-      // the range: a soft bar from the shortest to the longest day, a dot for the typical one, and the hours in words above it
       const lo = Math.min(...k.days), hi = Math.max(...k.days), mid = median(k.days), cy = y + 50;
       g.fillStyle = '#E4ECFF'; rr(g, bx, cy - 5, bw, 10, 5); g.fill();
       g.fillStyle = '#9DB8F2'; rr(g, X(lo) - 8, cy - 8, Math.max(16, X(hi) - X(lo) + 16), 16, 8); g.fill();
@@ -87,13 +91,11 @@ export async function sleepDiary(from, to) {
       txt(g, lo === hi ? dur(lo) : dur(lo) + ' – ' + dur(hi), bx, y + 28, '700 17px ' + BODY, SOFT);
       doc.y += rh;
     });
-    // a little scale under the bars, so the bar has numbers to it
     const g = doc.need(40); [0, mx / 2, mx].forEach(h => txt(g, h + ' h', Math.min(X(h * 60), bx + bw - 4), doc.y + 24, '700 15px ' + BODY, SOFT, h === 0 ? 'left' : h === mx ? 'right' : 'center'));
     doc.y += 34;
     doc.para('“Typical” is the middle day of the week. The dot on each bar is that typical day.', '600 19px ' + BODY, SOFT);
   }
 
-  // hours each day: night sleep and daytime rest stacked, with the typical day as a dashed line
   if (dKeys.length) {
     const all = days(dKeys[0], dKeys[dKeys.length - 1]), isDay = r => { const h = new Date(r.start).getHours(); return h >= 9 && h < 18; };
     const val = all.map(d => { const l = byDay[d] || []; const n = l.filter(r => !isDay(r)).reduce((a, r) => a + (r.end - r.start) / 3600000, 0), dd = l.filter(isDay).reduce((a, r) => a + (r.end - r.start) / 3600000, 0); return { d, n, dd, t: n + dd }; });
@@ -118,7 +120,6 @@ export async function sleepDiary(from, to) {
     doc.y += 56;
   }
 
-  // the sleep chart: one row per day, from 6 pm the evening before to 6 pm that day
   if (dKeys.length) {
     doc.heading('Sleep chart', 'each row runs from 6 pm the evening before to 6 pm that day', 200);
     const all = days(dKeys[0], dKeys[dKeys.length - 1]), lw = 190, x0 = M + lw, x1 = PW - M - 110, rh = 30;
@@ -130,7 +131,7 @@ export async function sleepDiary(from, to) {
     axis();
     all.forEach(d => {
       if (doc.y + rh > PH - M - 40) { doc.newPage(); axis(); }
-      const g = doc.g, y = doc.y, base = parseKey(d).getTime() - 6 * 3600000; // 6pm the day before
+      const g = doc.g, y = doc.y, base = parseKey(d).getTime() - 6 * 3600000;
       g.fillStyle = all.indexOf(d) % 2 ? 'rgba(255,253,247,.0)' : CARD; g.fillRect(M, y, PW - 2 * M, rh);
       for (let i = 0; i <= 8; i++) { g.fillStyle = i === 2 || i === 6 ? '#D8CDB2' : LINE; g.fillRect(x0 + (x1 - x0) * i / 8, y, 1.5, rh); }
       txt(g, shortDay(d), M + 10, y + rh * 0.7, '700 18px ' + BODY, INK);
@@ -145,23 +146,21 @@ export async function sleepDiary(from, to) {
     doc.y += 16;
   }
 
-  // every rest, with how it felt and any night notes
   const notes = {}; st.moments.filter(m => m.area === 'rest' && /^Awake in the night: /.test(m.text) && m.date >= from && m.date <= to).forEach(m => { (notes[m.date] = notes[m.date] || []).push(m.text.replace(/^Awake in the night: /, '')); });
-  doc.heading('Every rest', plural(rests.length, 'rest', 'rests') + ' logged');
+  doc.heading('Every rest', plural(rests.length, 'rest', 'rests'));
   const cols = [{ label: 'Day', w: 300 }, { label: 'Fell asleep', w: 170 }, { label: 'Woke up', w: 170 }, { label: 'Asleep for', w: 160 }, { label: 'Felt', w: 248 }];
   const rows = []; let last = null, par = 1;
   rests.forEach(r => {
     const first = r.date !== last; last = r.date; if (first) par = 1 - par;
-    rows.push({ shade: !par, cells: [first ? dayDate(r.date) : '', clock(r.start), clock(r.end), dur((r.end - r.start) / 60000), r.feel ? feelLabel(r.feel) : ''] });
+    rows.push({ shade: !par, cells: [first ? dayDate(r.date) : '', sleepTime(r, 'start'), sleepTime(r, 'end'), sleepDuration(r), r.feel ? feelLabel(r.feel) : ''] });
     const isLast = rests.filter(x => x.date === r.date).pop() === r;
-    if (isLast && notes[r.date]) rows.push({ cells: ['', 'Awake in the night: ' + notes[r.date].join(', ').toLowerCase(), '', '', ''], soft: [0, 1], shade: !par, span: 1 }); // the night note runs across the row
+    if (isLast && notes[r.date]) rows.push({ cells: ['', 'Awake in the night: ' + notes[r.date].join(', ').toLowerCase(), '', '', ''], soft: [0, 1], shade: !par, span: 1 });
     if (isLast) { const ds = byDay[r.date], tot = ds.reduce((n, x) => n + (x.end - x.start) / 60000, 0); rows.push({ total: true, cells: ['', 'Total for the day', '', dur(tot), ds.length > 1 ? ds.length + ' rests' : ''] }); }
   });
   if (rows.length) doc.table(cols, rows, { boldFirst: true, byShade: true });
   else doc.para('Nothing logged in these dates yet.');
   doc.space(10);
 
-  // in my own words (v45): what woke me, how I woke up, and my notes for the doctor, each with its day and time
   const said = [];
   st.moments.filter(m => m.area === 'rest' && m.woke && m.date >= from && m.date <= to).forEach(m => said.push({ date: m.date, ts: m.ts, text: 'What woke me: ' + m.woke }));
   rests.filter(r => r.words).forEach(r => said.push({ date: r.date, ts: r.end, text: 'How I woke up: ' + r.words }));
@@ -173,7 +172,7 @@ export async function sleepDiary(from, to) {
       doc.para(n.text, '600 23px ' + BODY, INK); doc.space(12);
     });
   }
-  doc.para('Logged by me in the Prequel app. Times are when I tapped “going to sleep” and “woke up”, or added by hand.', '600 20px ' + BODY, SOFT);
+  doc.para('Logged by me in the Prequel app. Times are when I tapped “going to sleep” and “woke up”, or added by hand. Times marked “Around” and durations marked “About” are estimates.', '600 20px ' + BODY, SOFT);
   return doc.finish('Sleep diary ' + longDate(from) + ' to ' + longDate(to) + '.pdf', 'Sleep diary · ' + range(from, to));
 }
 
@@ -191,7 +190,6 @@ export async function foodReport(from, to, label) {
   const doc = new Doc('My food', range(from, to));
   cover(doc, 'FOOD REPORT · ' + label.toUpperCase(), /7 days/.test(label) ? 'My week in food' : label.split(' ')[0] + ' in food', range(from, to), art.eating);
 
-  // highlights (only counts above zero)
   const items = ms.length + old.length;
   const firstSeen = {}; (st.meals || []).forEach(m => { const k = m.name.toLowerCase(); if (!firstSeen[k] || m.date < firstSeen[k]) firstSeen[k] = m.date; });
   const newFoods = new Set(ms.filter(m => firstSeen[m.name.toLowerCase()] >= from).map(m => m.name.toLowerCase())).size;
@@ -201,7 +199,6 @@ export async function foodReport(from, to, label) {
   doc.heading('The highlights');
   doc.tiles(hl);
 
-  // daily averages
   const avg = NUTRIENTS.map((_, i) => { const v = withNums.filter(d => per[d].S.cnt[i] > 0).map(d => per[d].S.t[i]); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; });
   if (withNums.length) {
     doc.heading('A typical day', 'averaged over ' + plural(withNums.length, 'day', 'days') + ' with numbers');
@@ -210,7 +207,6 @@ export async function foodReport(from, to, label) {
     doc.para('Only foods with numbers are counted, so days with a few “just logged it” entries may read a little low.', '600 19px ' + BODY, SOFT);
   }
 
-  // the day by day chart: calories as bars, protein written underneath
   if (withNums.length > 1) {
     doc.heading('Day by day', 'calories as bars · protein in grams underneath', 460);
     const ch = 300, g = doc.need(ch + 90), x0 = M + 10, w = PW - 2 * M - 20, bw = w / D.length, top = doc.y;
@@ -231,7 +227,6 @@ export async function foodReport(from, to, label) {
     doc.y += 54;
   }
 
-  // gym days vs rest days
   const gymD = withNums.filter(d => st.sessions.some(s => s.date === d)), restD = withNums.filter(d => !st.sessions.some(s => s.date === d));
   if (gymD.length && restD.length) {
     const a = (ds, i) => ds.reduce((n, d) => n + per[d].S.t[i], 0) / ds.length;
@@ -242,7 +237,6 @@ export async function foodReport(from, to, label) {
     ], { boldFirst: true, rh: 56, fs: 23 });
   }
 
-  // where it came from
   const kt = [[kinds.home, 'Home-cooked'], [kinds.out, 'Eating out'], [kinds.packaged, 'Packaged']].filter(k => k[0] > 0);
   if (kt.length) {
     doc.heading('Where it came from');
@@ -253,7 +247,6 @@ export async function foodReport(from, to, label) {
     doc.para(kt.map(k => k[1] + ': ' + k[0]).join('   ·   '), '700 21px ' + BODY, INK);
   }
 
-  // regulars and protein sources
   const agg = {}; ms.forEach(m => { const k = m.name; const a = agg[k] = agg[k] || { n: 0, p: 0, kc: 0 }; a.n += m.qty || 1; const v = totalOf(m); if (v) { a.p += v[1] || 0; a.kc += v[0] || 0; } });
   const regulars = Object.entries(agg).sort((a, b) => b[1].n - a[1].n).slice(0, 5);
   const protein = Object.entries(agg).filter(e => e[1].p > 0).sort((a, b) => b[1].p - a[1].p).slice(0, 5);
@@ -266,14 +259,12 @@ export async function foodReport(from, to, label) {
     doc.table([{ label: 'Food', w: 700 }, { label: 'Protein in total', w: 348, right: true }], protein.map(([n, a]) => ({ cells: [n, round(a.p) + ' g'] })));
   }
 
-  // weight
   const ws = (st.weights || []).filter(w => w.date >= from && w.date <= to).sort((a, b) => a.date.localeCompare(b.date) || a.ts - b.ts);
   if (ws.length) {
     doc.heading('Weight', ws.length > 1 ? 'from ' + longDate(ws[0].date) + ' to ' + longDate(ws[ws.length - 1].date) : longDate(ws[0].date));
     doc.para(ws.map(w => longDate(w.date) + ': ' + w.kg + ' kg' + (w.where ? ' (' + w.where + ')' : '')).join('   ·   '), '700 22px ' + BODY, INK);
   }
 
-  // gentle ideas
   doc.heading('A few gentle ideas', 'ideas, not rules', 260);
   const ideas = [];
   const lastW = (st.weights || []).slice().sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -302,7 +293,6 @@ export async function foodReport(from, to, label) {
   doc.para('Numbers come from the Indian Nutrient Databank and USDA, so treat them as close estimates. Not medical advice.', '600 19px ' + BODY, SOFT);
   if (art.cooking) { const g = doc.g, h = 300, w = h * art.cooking.width / art.cooking.height; if (doc.y + h < PH - M - 40) g.drawImage(art.cooking, PW - M - w, PH - M - 50 - h, w, h); }
 
-  // everything eaten, day by day
   doc.newPage();
   doc.heading('Everything I ate', plural(items, 'thing', 'things'));
   const rows = [];
@@ -332,7 +322,6 @@ async function build(fn, what) {
   try { const file = await fn(); ready(file, null, what); }
   catch (err) { closeSheet(); toast('Something went wrong making the PDF.'); console.error(err); }
 }
-// every month that has something logged, newest first: [label, from, to]
 function monthsWith(dates) {
   const t = today(), seen = new Set(dates.map(d => d.slice(0, 7))), out = [];
   Array.from(seen).sort().reverse().forEach(ym => {
@@ -342,7 +331,6 @@ function monthsWith(dates) {
   return out;
 }
 function rangeSheet(title, intro, opts, months, onPick) {
-  // a range with nothing in it is shown softly and can't be picked, so no empty PDF is ever made
   const optBtn = (o, i) => '<button type="button" class="opt' + (o.empty ? ' empty' : '') + '" data-o="' + i + '"' + (o.empty ? ' disabled' : '') + '>' + o[0] + '<small style="display:block;font-weight:700;opacity:.7">' + esc(range(o[1], o[2])) + (o.empty ? ' · nothing logged in these dates yet' : '') + '</small></button>';
   openSheet('<h2>' + title + '</h2><p class="muted">' + intro + '</p>' + opts.map(optBtn).join('') +
     (months.length ? '<div class="lbl">Or pick a month</div><div class="chips monthpick">' + months.map((m, i) => '<button type="button" class="chip small" data-m="' + i + '">' + m[0] + '</button>').join('') + '</div>' : '') +
@@ -352,7 +340,6 @@ function rangeSheet(title, intro, opts, months, onPick) {
     if ((b = e.target.closest('[data-m]'))) { const m = months[+b.dataset.m]; onPick(m[1], m[2], m[0]); }
   });
 }
-// before anything is logged there's no report to make yet: say so warmly instead of making an empty PDF
 function notYet(pose, title, text) {
   openSheet('<div class="notyet">' + him(pose, 'breathe', 'Your character') + '<h2>' + title + '</h2><p class="muted">' + text + '</p></div><button type="button" class="btn" data-close>Okay</button>');
 }
@@ -360,7 +347,7 @@ const markEmpty = (opts, dates) => opts.forEach(o => { o.empty = !dates.some(d =
 export function openSleepDiary() {
   const t = today(), st = get();
   if (!st.rests.length) { notYet('asleep', 'Your sleep diary starts with one rest', 'Log a night, or even a nap, and your first diary will be ready to make.'); return; }
-  const first = st.rests.length ? st.rests.reduce((m, r) => r.date < m ? r.date : m, t) : t;
+  const first = st.rests.reduce((m, r) => r.date < m ? r.date : m, t);
   const opts = [['Last 2 weeks', addDays(t, -13), t], ['Last 4 weeks', addDays(t, -27), t], ['Everything', first, t]];
   markEmpty(opts, st.rests.map(r => r.date));
   rangeSheet('Sleep diary', 'A tidy PDF for you or your doctor. Which dates?', opts, monthsWith(st.rests.map(r => r.date)), (a, b) => build(() => sleepDiary(a, b), 'sleep diary'));

@@ -2,9 +2,13 @@
 import { esc, openSheet, him } from './ui.js';
 import { dayDate } from './pdf.js';
 
-// What's new: a few plain lines for every update, newest first. Shown once after an update, and kept in Settings.
-// Every release adds an entry here (same number as VERSION in sw.js). Write it the way you'd tell a friend.
+// What's new: a few plain lines for every update, newest first.
+// Each release number matches VERSION in sw.js.
 export const NEWS = [
+  { v: 53, date: '2026-10-18', items: [
+    'You can now mark when you fell asleep or woke up as approximate, if you only remember roughly.',
+    'Your sleep diary keeps that distinction, so you and your doctor can tell which times are estimates.'
+  ] },
   { v: 52, date: '2026-10-18', items: [
     'Days has a calendar, making it easier to find a date and look back at your days.',
     'Your calendar is available offline too, so you can still use it without an internet connection.'
@@ -99,21 +103,53 @@ export const NEWS = [
 
 export const LATEST = NEWS[0].v;
 
-// one block per update: the date in words, then its lines
+// One block per update: the date in words, then its lines.
 export function newsHtml(entries) {
-  return entries.map(n => '<div class="newsday"><div class="lbl">' + esc(dayDate(n.date)) + ' · update ' + n.v + '</div><ul>' + n.items.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul></div>').join('');
+  return entries.map(n =>
+    '<div class="newsday"><div class="lbl">' +
+    esc(dayDate(n.date)) + ' · update ' + n.v +
+    '</div><ul>' +
+    n.items.map(t => '<li>' + esc(t) + '</li>').join('') +
+    '</ul></div>'
+  ).join('');
 }
-// the window: "Fresh from the workshop · A few new things". After an update it shows only the latest one;
-// if more were missed, one "See all updates" button turns the same window into the full list. Never a chain of windows.
-const head = title => '<div class="newshead">' + him('letter', 'pop', 'Your character holding a note') + '<div><div class="k">Fresh from the workshop</div><h2>' + title + '</h2></div></div>';
-const fullList = () => head('What\'s new') + '<div class="newslist">' + newsHtml(NEWS) + '</div><button type="button" class="btn" data-close>Done</button>';
+
+// After an update, show only the latest one.
+// If more were missed, "See all updates" opens the full list.
+const head = title =>
+  '<div class="newshead">' +
+  him('letter', 'pop', 'Your character holding a note') +
+  '<div><div class="k">Fresh from the workshop</div><h2>' +
+  title + '</h2></div></div>';
+
+const fullList = () =>
+  head('What\'s new') +
+  '<div class="newslist">' + newsHtml(NEWS) + '</div>' +
+  '<button type="button" class="btn" data-close>Done</button>';
+
 export function openNews(entries, all) {
-  if (all) { openSheet(fullList()); return; }
+  if (all) {
+    openSheet(fullList());
+    return;
+  }
+
   const missed = entries.length - 1;
-  const sheet = openSheet(head('A few new things') + '<div class="newslist">' + newsHtml(entries.slice(0, 1)) + '</div>' +
-    (missed > 0 ? '<div class="newsmore"><p>You also missed ' + missed + (missed === 1 ? ' earlier update.' : ' earlier updates.') + '</p><button type="button" class="btn alt" data-allnews>See all updates</button></div>' : '') +
+  const sheet = openSheet(
+    head('A few new things') +
+    '<div class="newslist">' + newsHtml(entries.slice(0, 1)) + '</div>' +
+    (missed > 0
+      ? '<div class="newsmore"><p>You also missed ' + missed +
+        (missed === 1 ? ' earlier update.' : ' earlier updates.') +
+        '</p><button type="button" class="btn alt" data-allnews>See all updates</button></div>'
+      : '') +
     '<p class="muted newswhere">Every update stays in Settings → What\'s new.</p>' +
-    '<button type="button" class="btn" data-close>Got it</button>', ev => {
-    if (ev.target.closest('[data-allnews]')) { const sh = sheet.querySelector('.sheet'); sh.innerHTML = fullList(); sh.scrollTop = 0; }
-  });
+    '<button type="button" class="btn" data-close>Got it</button>',
+    ev => {
+      if (ev.target.closest('[data-allnews]')) {
+        const sh = sheet.querySelector('.sheet');
+        sh.innerHTML = fullList();
+        sh.scrollTop = 0;
+      }
+    }
+  );
 }
