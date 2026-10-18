@@ -8,7 +8,9 @@ export const NEWS = [
     'Four new weathers: Angry, Lonely, Stressed and Annoyed.',
     'Tap any weather and you\'ll see "Things that might help", a few ideas for that feeling, like talking to someone, a quick workout or slow breathing.',
     'New on Mind: Vent. Write it all out, and it\'s saved just for you. You can read it back or delete it any time, and nobody else sees it.',
-    'Home has a "Today\'s thought", a new quote every day.'
+    'Home has a "Today\'s thought", a new quote every day.',
+    'Goals on Me can now be ticked off when you\'ve done them. A small win, counted.',
+    'New little game: Minesweeper. On a soft day, find it under Skate on Home. Tap Clear to open a square, or Flag to mark where you think a mine is hiding.'
   ] },
   { v: 50, date: '2026-10-18', items: [
     'You can now change or remove a log right on Move. Tap an activity to see its recent logs, or tap anything in "Lately", then Edit or Remove.',

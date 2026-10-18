@@ -78,6 +78,7 @@ function render() {
     '</div>' +
     (soft
       ? '<a class="game" href="#/skate"><span><b>Skate home</b><small>' + ((st.games && st.games.skate && st.games.skate.best) ? 'Your best: ' + st.games.skate.best + ' m' : 'Jump the bumps, grab the stars') + '</small></span><b class="go">Play ›</b></a>' +
+        '<a class="game" href="#/minesweeper"><span><b>Minesweeper</b><small>Clear the board, one square at a time</small></span><b class="go">Play ›</b></a>' +
         quoteCard +
         (() => { const m = fromJar(true); return m ? '<a class="fromjar" href="#/wins"><small>From your jar · ' + esc(new Date(m.ts).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })) + '</small>' + esc(m.text) + '<em>You did this. You can again.</em></a>' : ''; })() +
         '<a class="rowlink" href="#/letters?open=1"><span>' + (st.letters.length ? 'A letter from good-day you' : 'No letters yet. Write one on a good day.') + '</span><b>›</b></a>' +
