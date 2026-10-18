@@ -1,33 +1,177 @@
-// Offline support: the app opens even with no signal. Change VERSION when you publish an update.
-const VERSION = 'prequel-v51';
+
+// Offline support: the app opens even with no signal.
+// Change VERSION when you publish an update.
+const VERSION = 'prequel-v52';
+
 const SHELL = [
-  './', 'index.html', 'manifest.webmanifest', 'css/app.css',
-  'js/app.js', 'js/store.js', 'js/data.js', 'js/ui.js', 'js/sky-model.js', 'js/goals.js', 'js/charts.js', 'js/nutrition.js', 'js/quotesoftheday.js', 'data/foods.json',
-  'js/screens/home.js', 'js/screens/weather.js', 'js/screens/move.js', 'js/screens/food.js', 'js/screens/rest.js',
-  'js/screens/wins.js', 'js/screens/mind.js', 'js/screens/vent.js', 'js/screens/minesweeper.js', 'js/screens/letters.js', 'js/screens/days.js', 'js/screens/me.js', 'js/screens/sky.js', 'js/screens/quilt.js', 'js/screens/skate.js', 'js/screens/settings.js', 'js/screens/share.js', 'js/cards.js', 'js/pdf.js', 'js/reports.js', 'js/news.js', 'js/cycle.js', 'js/activities.js', 'js/screens/movehub.js',
-  ...['nunito-latin-500', 'nunito-latin-700', 'nunito-latin-800', 'nunito-latin-900', 'gaegu-latin-700'].map(n => 'fonts/' + n + '-normal.woff2'),
-  'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
-  ...['standing', 'waving', 'lying', 'asleep', 'eating', 'cooking', 'umbrella', 'sunny', 'nightwatch', 'letter', 'cheer', 'stickynote', 'skate', 'legday', 'sitting', 'skatego', 'afternoon', 'cwalk', 'cgrab', 'cflip', 'cfloat', 'cmanual', 'ccarve', 'sewing'].map(n => 'art/' + n + '.webp')
+  './',
+  'index.html',
+  'manifest.webmanifest',
+  'css/app.css',
+
+  // Core app files
+  'js/app.js',
+  'js/store.js',
+  'js/data.js',
+  'js/ui.js',
+  'js/sky-model.js',
+  'js/goals.js',
+  'js/charts.js',
+  'js/nutrition.js',
+  'js/quotesoftheday.js',
+  'data/foods.json',
+
+  // App screens, including the calendar
+  'js/screens/home.js',
+  'js/screens/weather.js',
+  'js/screens/move.js',
+  'js/screens/food.js',
+  'js/screens/rest.js',
+  'js/screens/wins.js',
+  'js/screens/mind.js',
+  'js/screens/vent.js',
+  'js/screens/minesweeper.js',
+  'js/screens/letters.js',
+  'js/screens/days.js',
+  'js/screens/me.js',
+  'js/screens/sky.js',
+  'js/screens/quilt.js',
+  'js/screens/skate.js',
+  'js/screens/settings.js',
+  'js/screens/share.js',
+
+  // Other app modules
+  'js/cards.js',
+  'js/pdf.js',
+  'js/reports.js',
+  'js/news.js',
+  'js/cycle.js',
+  'js/activities.js',
+  'js/screens/movehub.js',
+
+  // Fonts
+  ...[
+    'nunito-latin-500',
+    'nunito-latin-700',
+    'nunito-latin-800',
+    'nunito-latin-900',
+    'gaegu-latin-700'
+  ].map(n => 'fonts/' + n + '-normal.woff2'),
+
+  // App icons
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/apple-touch-icon.png',
+
+  // App artwork
+  ...[
+    'standing',
+    'waving',
+    'lying',
+    'asleep',
+    'eating',
+    'cooking',
+    'umbrella',
+    'sunny',
+    'nightwatch',
+    'letter',
+    'cheer',
+    'stickynote',
+    'skate',
+    'legday',
+    'sitting',
+    'skatego',
+    'afternoon',
+    'cwalk',
+    'cgrab',
+    'cflip',
+    'cfloat',
+    'cmanual',
+    'ccarve',
+    'sewing'
+  ].map(n => 'art/' + n + '.webp')
 ];
 
-self.addEventListener('install', e => {
-  // cache: 'reload' skips the browser's own short-term cache, so an update never picks up old files
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(VERSION)
+      .then(cache =>
+        cache.addAll(
+          SHELL.map(url =>
+            new Request(url, { cache: 'reload' })
+          )
+        )
+      )
+      .then(() => self.skipWaiting())
+  );
 });
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== VERSION)
+            .map(key => caches.delete(key))
+        )
+      )
+      .then(() => self.clients.claim())
+  );
 });
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  // opening the app: try the network first so updates arrive, fall back to the cache when offline
-  if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request, { cache: 'no-store' }).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put('index.html', copy)); return res; }).catch(() => caches.match('index.html')));
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
+  // Navigation: try the network first, then fall back to
+  // the cached app when offline.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(response => {
+          if (response.ok) {
+            const copy = response.clone();
+
+            caches.open(VERSION).then(cache => {
+              cache.put('index.html', copy);
+            });
+          }
+
+          return response;
+        })
+        .catch(() => caches.match('index.html'))
+    );
+
     return;
   }
-  // everything else: serve from the cache straight away, refresh it quietly in the background
-  e.respondWith(caches.open(VERSION).then(async cache => {
-    const hit = await cache.match(e.request, { ignoreSearch: true });
-    const net = fetch(e.request).then(res => { if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) cache.put(e.request, res.clone()); return res; }).catch(() => hit);
-    return hit || net;
-  }));
+
+  // Other resources: return cached content immediately
+  // when available and refresh the cache from the network.
+  event.respondWith(
+    caches.open(VERSION).then(async cache => {
+      const cached = await cache.match(
+        event.request,
+        { ignoreSearch: true }
+      );
+
+      const network = fetch(event.request)
+        .then(response => {
+          if (
+            response &&
+            response.ok &&
+            (
+              response.type === 'basic' ||
+              response.type === 'cors'
+            )
+          ) {
+            cache.put(event.request, response.clone());
+          }
+
+          return response;
+        })
+        .catch(() => cached);
+
+      return cached || network;
+    })
+  );
 });

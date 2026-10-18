@@ -1,9 +1,14 @@
+
 import { esc, openSheet, him } from './ui.js';
 import { dayDate } from './pdf.js';
 
 // What's new: a few plain lines for every update, newest first. Shown once after an update, and kept in Settings.
 // Every release adds an entry here (same number as VERSION in sw.js). Write it the way you'd tell a friend.
 export const NEWS = [
+  { v: 52, date: '2026-10-18', items: [
+    'Days has a calendar, making it easier to find a date and look back at your days.',
+    'Your calendar is available offline too, so you can still use it without an internet connection.'
+  ] },
   { v: 51, date: '2026-10-18', items: [
     'Four new weathers: Angry, Lonely, Stressed and Annoyed.',
     'Tap any weather and you\'ll see "Things that might help", a few ideas for that feeling, like talking to someone, a quick workout or slow breathing.',
@@ -91,13 +96,14 @@ export const NEWS = [
     'With nothing logged yet, reports kindly say "not yet" instead of making an empty PDF.'
   ] }
 ];
+
 export const LATEST = NEWS[0].v;
 
 // one block per update: the date in words, then its lines
 export function newsHtml(entries) {
   return entries.map(n => '<div class="newsday"><div class="lbl">' + esc(dayDate(n.date)) + ' · update ' + n.v + '</div><ul>' + n.items.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul></div>').join('');
 }
-// the window: "Fresh from the workshop · A few new things". After an update it shows only the latest one (v44);
+// the window: "Fresh from the workshop · A few new things". After an update it shows only the latest one;
 // if more were missed, one "See all updates" button turns the same window into the full list. Never a chain of windows.
 const head = title => '<div class="newshead">' + him('letter', 'pop', 'Your character holding a note') + '<div><div class="k">Fresh from the workshop</div><h2>' + title + '</h2></div></div>';
 const fullList = () => head('What\'s new') + '<div class="newslist">' + newsHtml(NEWS) + '</div><button type="button" class="btn" data-close>Done</button>';

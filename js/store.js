@@ -35,30 +35,31 @@ function fresh() {
   return {
     v: 1,
     created: Date.now(),
-    moments: [],      // {id, date, ts, area, text, bright}
-    weather: [],      // {id, date, ts, types:[name], strength}
-    sessions: [],     // {id, date, ts, workoutId, workoutName, light, exercises:[{key, name, swap, sets:[{a,b}]}]}
-    rests: [],        // {id, date, start, end, feel, words?}   date = the day you woke up
-    doctorNotes: [],  // {id, date, ts, text}  notes for your doctor (v45), in the sleep diary
-    activities: [],   // {id, date, ts, type, mins?, feel?, hl?, note?, f:{}}  Move's other activities (v48)
-    cycleDays: [],    // {id, date, period, flow, feels:[]}  the optional Cycle tab (v46), private
+    moments: [],
+    weather: [],
+    sessions: [],
+    rests: [],
+    doctorNotes: [],
+    activities: [],
+    cycleDays: [],
     pendingSleep: null,
-    mind: [],         // {id, text, remindOn, created, letGo}
-    letters: [],      // {id, text, ts, weather, opened}
-    foods: [],        // {id, date, ts, tags:[], note}
-    heavy: {},        // date -> true
+    mind: [],
+    letters: [],
+    foods: [],
+    heavy: {},
     comfort: DEFAULT_COMFORT.slice(),
-    lifts: {},        // exercise key -> {a, b}
-    units: {},        // exercise key -> 'kg' | 'plate'
+    lifts: {},
+    units: {},
     customExercises: {},
     customWorkouts: [],
-    myFoods: [],      // {id, name, from, n:[12] per portion, per100?, unit, unitG, measures?, kind, uses}
-    meals: [],        // {id, date, ts, name, foodId, n, unit, unitG, qty, sure, kind}
-    weights: [],      // {id, date, ts, kg, where}
-    goals: [],        // {id, kind:'linked'|'own', source, name, target, from, created, finished}
-    goalLogs: [],     // {id, goalId, date, ts}  your own goals, logged by you
-    workoutAdds: {},  // workout id -> [[key, sets, range]] kept additions
-    subsAdded: {},    // exercise key -> [names]
+    myFoods: [],
+    meals: [],
+    weights: [],
+    goals: [],
+    goalLogs: [],
+    events: [],
+    workoutAdds: {},
+    subsAdded: {},
     settings: { name: '', tinyWins: DEFAULT_TINY_WINS.slice(), kindLines: DEFAULT_KIND_LINES.slice() }
   };
 }
@@ -92,7 +93,6 @@ export async function load() {
   state = Object.assign(fresh(), saved || {});
   state.settings = Object.assign(fresh().settings, state.settings || {});
   await loadUndo();
-  // ask the browser to keep this data even when the phone is low on space
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* not supported */ }
   return state;
 }
@@ -107,7 +107,6 @@ export function save() {
   }, 150);
   listeners.forEach(fn => fn(state));
 }
-// write straight away (after a restore or an undo, so closing the app that instant loses nothing)
 export async function saveNow() {
   clearTimeout(saveTimer);
   const snapshot = JSON.parse(JSON.stringify(state));
@@ -129,20 +128,60 @@ export function removeById(listName, id) {
   save();
 }
 
-// ---------- backup ----------
-export function exportJSON() { return JSON.stringify(Object.assign({ exported: new Date().toISOString() }, state), null, 1); }
+// ---------- calendar events ----------
+export function addCalendarEvent(event) {
+  const item = {
+    id: uid(),
+    date: event.date,
+    title: String(event.title || '').trim(),
+    start: event.start || '',
+    end: event.end || '',
+    notes: String(event.notes || '').trim(),
+    category: event.category || 'personal',
+    created: Date.now()
+  };
+  if (!item.title) throw new Error('Please add an event title.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date || '')) throw new Error('Please choose a valid date.');
+  state.events = state.events || [];
+  state.events.push(item);
+  save();
+  return item;
+}
 
-// Checking a backup before it's used. Missing parts are fine (older backups don't have newer fields, and get them
-// filled in). A part that's there but the wrong shape means the whole file is refused: no half-restores.
+export function updateCalendarEvent(id, changes) {
+  state.events = state.events || [];
+  const item = state.events.find(e => e.id === id);
+  if (!item) return false;
+  const next = Object.assign({}, changes);
+  if ('title' in next) next.title = String(next.title || '').trim();
+  if ('notes' in next) next.notes = String(next.notes || '').trim();
+  if ('date' in next && !/^\d{4}-\d{2}-\d{2}$/.test(next.date || '')) throw new Error('Please choose a valid date.');
+  if ('title' in next && !next.title) throw new Error('Please add an event title.');
+  Object.assign(item, next);
+  save();
+  return true;
+}
+
+export function removeCalendarEvent(id) {
+  removeById('events', id);
+}
+
+// ---------- backup ----------
+export function exportJSON() {
+  return JSON.stringify(Object.assign({ exported: new Date().toISOString() }, state), null, 1);
+}
+
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
-const RECORDS = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'mind', 'letters', 'foods', 'comfort', 'customWorkouts', 'myFoods', 'meals', 'weights', 'goals', 'goalLogs'];
-const DATED = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'foods', 'meals', 'weights', 'goalLogs'];
+const RECORDS = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'mind', 'letters', 'foods', 'comfort', 'customWorkouts', 'myFoods', 'meals', 'weights', 'goals', 'goalLogs', 'events'];
+const DATED = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'foods', 'meals', 'weights', 'goalLogs', 'events'];
 const MAPS = ['heavy', 'lifts', 'units', 'customExercises', 'workoutAdds', 'subsAdded', 'settings', 'sky', 'games'];
+
 export const BACKUP_PROBLEMS = {
   unreadable: 'That file couldn\'t be read, so Prequel can\'t use it. Nothing was changed.',
   notours: 'That doesn\'t look like a Prequel backup. Nothing was changed.',
   damaged: 'This backup looks damaged in places, so Prequel didn\'t use it. Your app is exactly as it was.'
 };
+
 export function checkBackup(text) {
   let d;
   try { d = JSON.parse(text); } catch (e) { return { problem: 'unreadable' }; }
@@ -158,13 +197,14 @@ export function checkBackup(text) {
   if (isObj(d.settings) && ['tinyWins', 'kindLines', 'dayTabs'].some(k => k in d.settings && !Array.isArray(d.settings[k]))) return bad('settings');
   return { data: d };
 }
-// does this hold anything you logged? (a brand-new app doesn't, so there's nothing to keep a copy of)
-export function hasData(s = state) { return RECORDS.some(k => k !== 'comfort' && Array.isArray(s[k]) && s[k].length); }
 
-// A safety copy: before a restore replaces everything, the app's data from just before is kept on this phone
-// for 7 days (outside the main data, so it's never inside a backup), and Settings offers to put it back.
+export function hasData(s = state) {
+  return RECORDS.some(k => k !== 'comfort' && Array.isArray(s[k]) && s[k].length);
+}
+
 const UNDO_KEY = 'undo', UNDO_DAYS = 7;
 let undoAt = null;
+
 async function readUndo() {
   if (db) return idbGet(UNDO_KEY);
   const raw = localStorage.getItem('prequel-undo'); return raw ? JSON.parse(raw) : null;
@@ -180,10 +220,11 @@ async function loadUndo() {
     else { undoAt = null; if (u) await writeUndo(null); }
   } catch (e) { undoAt = null; }
 }
-export function undoInfo() { return undoAt && Date.now() - undoAt < UNDO_DAYS * 864e5 ? { at: undoAt, until: undoAt + UNDO_DAYS * 864e5 } : null; }
 
-// replace everything with a checked backup. Keeps the safety copy first; if it can't, says so ('nocopy')
-// unless told to go ahead anyway.
+export function undoInfo() {
+  return undoAt && Date.now() - undoAt < UNDO_DAYS * 864e5 ? { at: undoAt, until: undoAt + UNDO_DAYS * 864e5 } : null;
+}
+
 export async function restoreBackup(data, { withoutCopy = false } = {}) {
   if (hasData()) {
     const at = Date.now();
@@ -191,14 +232,14 @@ export async function restoreBackup(data, { withoutCopy = false } = {}) {
     catch (e) { if (!withoutCopy) return 'nocopy'; }
   }
   const d = JSON.parse(JSON.stringify(data)); delete d.exported;
-  const seen = state.newsSeen; // which updates this phone has shown belongs to the app here, not to the backup
+  const seen = state.newsSeen;
   state = Object.assign(fresh(), d);
   state.settings = Object.assign(fresh().settings, d.settings || {});
   if (seen != null) state.newsSeen = seen;
   await saveNow();
   return 'ok';
 }
-// put back the data from before the last restore
+
 export async function undoRestore() {
   let u = null; try { u = await readUndo(); } catch (e) { /* unreadable */ }
   if (!u || !u.state) { undoAt = null; return false; }
@@ -210,18 +251,19 @@ export async function undoRestore() {
   try { await writeUndo(null); } catch (e) { /* it expires anyway */ }
   undoAt = null; return true;
 }
-// kept for anything that still restores from plain text in one step
+
 export async function importJSON(text) {
   const r = checkBackup(text);
   if (r.problem) throw new Error(BACKUP_PROBLEMS[r.problem]);
   return restoreBackup(r.data, { withoutCopy: true });
 }
-// start fresh: everything back to how it was on day one
 export function reset() { state = fresh(); save(); }
-// a gentle nudge to save a backup roughly once a month, once there's something worth keeping
 export function backupDue() {
   if (!state || state.moments.length < 5) return false;
   const since = state.lastBackup || state.created || Date.now();
   return Date.now() - since > 30 * 864e5;
 }
-export async function isPersisted() { try { return navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : false; } catch (e) { return false; } }
+export async function isPersisted() {
+  try { return navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : false; }
+  catch (e) { return false; }
+}

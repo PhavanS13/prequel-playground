@@ -852,3 +852,82 @@ html[data-theme="dark"] .cal2.cy .d[aria-pressed="true"] { background: #C2577A; 
 .latelylist .entry { width: 100%; display: flex; gap: 10px; border: 0; border-top: 1px dashed var(--line); background: transparent; color: var(--ink); text-align: left; font: inherit; font-weight: 600; }
 .latelylist .entry > span { flex: 1; }
 .latelylist .entry > b { color: var(--ink-soft); align-self: center; }
+
+.event-add {
+  margin-top: 4px;
+}
+
+.eventitem {
+  align-items: flex-start;
+  padding: 7px 0;
+}
+
+.eventitem span {
+  gap: 3px;
+}
+
+.eventitem b {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.eventitem .lnk {
+  border: 0;
+  background: transparent;
+  padding: 6px;
+  font-weight: 900;
+  color: var(--blue);
+}
+
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-form label {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+
+.event-form input,
+.event-form select,
+.event-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.event-form textarea {
+  resize: vertical;
+}
+
+.event-times {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.event-times > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-form .err {
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cal2 .d:disabled,
+.cal2 .monthbar button:disabled {
+  opacity: 1;
+}
