@@ -74,6 +74,7 @@ function render(root, keep) {
   const jot = keep && root.querySelector('#jot') ? root.querySelector('#jot').value : '';
   const open = st.mind.filter(n => !n.letGo).sort((a, b) => (a.remindOn || '9999').localeCompare(b.remindOn || '9999'));
   const lanterns = st.mind.filter(n => n.letGo).length;
+  const ventCount = (st.vents || []).length;
   root.innerHTML =
     '<div><h1>Things on my mind</h1><p class="sub">No due dates. No overdue. Just a place to put things down. Tap a note to change it.</p></div>' +
     '<div class="card">' +
@@ -93,6 +94,7 @@ function render(root, keep) {
     (lanterns ? '<details class="letgo"><summary>Lanterns you\'ve let go · call one back any time</summary>' + st.mind.filter(n => n.letGo).sort((a, b) => b.letGo - a.letGo).map(n => '<div class="item lantern"><i style="background:#3E9E6E"></i><button type="button" class="tap" data-editnote="' + n.id + '">' + esc(n.text) + '</button><button type="button" class="recall" data-recall="' + n.id + '">Bring back</button></div>').join('') + '</details>' : '') +
     // never a zero: the count only shows once there's a lantern
     '<p class="muted" style="font-size:13px">' + (lanterns ? lanterns + (lanterns === 1 ? ' lantern' : ' lanterns') + ' let go so far. ' : '') + 'Doing it or not doing it, both count as letting go.</p>' +
+    '<a class="rowlink" href="#/vent"><span>Vent<span class="rowsub">Write it all out. Saved just for you.</span></span><b>' + (ventCount ? ventCount + ' ›' : '›') + '</b></a>' +
     '<a class="rowlink" href="#/letters"><span>Letters from good-day you</span><b>' + (st.letters.length ? st.letters.length + ' ›' : '›') + '</b></a>' +
     nav('mind');
 }

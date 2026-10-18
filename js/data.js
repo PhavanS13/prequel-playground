@@ -74,6 +74,26 @@ export const WEATHERS = [
   ['Annoyed', 'annoyed, irritated', '#C9792B', '<circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/>', 'Ugh, that\'s irritating. You\'re allowed to be fed up.', 'standing']
 ];
 export const weatherByName = n => WEATHERS.find(w => w[0] === n);
+// things that might help, by weather (shown on the weather screen)
+export const WEATHER_TIPS = {
+  'Clear sun': ['Use the energy: a walk, a kickabout, or a call to someone you like', 'Write down what made today good, so you can find it on a harder day'],
+  'Golden hour': ['Stay in it. Put your phone down for ten minutes', 'Tell someone you are glad of them'],
+  'Partly cloudy': ['Do one small thing you have been putting off', 'A short walk can tip a mixed day the good way'],
+  'Overcast': ['Get outside for ten minutes, even if it is grey', 'Put on music or a podcast you like', 'Message a friend about nothing in particular'],
+  'Fog': ['Pick one tiny next step and ignore the rest', 'Have some water and something to eat', 'Cold water on your face or a short walk can help you feel more here'],
+  'Drizzle': ['Talk to someone you trust, even just a text', 'Read something comforting or put on a favourite show', 'A warm drink and a blanket count as a plan'],
+  'Heavy rain': ['Tell someone how you are feeling, a friend or family member', 'You do not have to fix it today. Water, food, rest', 'If it stays this heavy for days, please speak to a doctor or someone you trust'],
+  'Thunderstorm': ['Slow breathing: in for 4, out for 6, a few times', 'Write down everything on your mind, then pick just one thing', 'Step away from screens for a bit and tell someone you are struggling'],
+  'Windy': ['Try a quick workout or a fast walk to burn off the buzz', 'Slow breathing: in for 4, out for 6', 'Pick one small thing to hold onto and finish it'],
+  'Heatwave': ['Water, food, and some shade first', 'Cancel or shrink one thing on your list', 'Take a proper break with no phone'],
+  'Snow / still': ['Stay warm and let it be quiet', 'A slow stretch or a gentle walk when you are ready', 'Reach out to one person, even with a single word'],
+  'Rainbow': ['Write down what got you through, so you remember', 'Tell someone about it', 'Do something that feels good to celebrate'],
+  'Clear night': ['Keep the evening easy and screen-light', 'A few minutes of stretching or reading before bed', 'Write down one good thing from today'],
+  'Angry': ['Do something physical: a quick workout, a hard walk, or punching a pillow', 'Write out everything you want to say, but do not send it', 'Wait before you reply to anyone or make decisions', 'Slow breathing: in for 4, out for 6'],
+  'Lonely': ['Message or call one person, even if it feels small', 'Go somewhere with other people around, like a cafe or library', 'Read or watch something that feels like company'],
+  'Stressed': ['Write a list of everything on your mind, then circle just one thing', 'Take a 10-minute break away from the screen', 'Slow breathing: in for 4, out for 6', 'Say no, or ask for help with one thing'],
+  'Annoyed': ['Take a short walk or do a quick workout to shake it off', 'Put on loud music for a song or two', 'Write out what is bugging you, then see if it still is afterwards']
+};
 
 export const FOOD_TAGS = ['Proper meal', 'Snack', 'Cooked it myself', 'Tried something new', 'Breakfast', 'Fruit', 'Drank water', 'Protein-y'];
 // how you woke up (v45: six words). The third item is the quilt pattern family it sews with:

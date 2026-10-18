@@ -4,6 +4,12 @@ import { dayDate } from './pdf.js';
 // What's new: a few plain lines for every update, newest first. Shown once after an update, and kept in Settings.
 // Every release adds an entry here (same number as VERSION in sw.js). Write it the way you'd tell a friend.
 export const NEWS = [
+  { v: 51, date: '2026-10-18', items: [
+    'Four new weathers: Angry, Lonely, Stressed and Annoyed.',
+    'Tap any weather and you\'ll see "Things that might help", a few ideas for that feeling, like talking to someone, a quick workout or slow breathing.',
+    'New on Mind: Vent. Write it all out, and it\'s saved just for you. You can read it back or delete it any time, and nobody else sees it.',
+    'Home has a "Today\'s thought", a new quote every day.'
+  ] },
   { v: 50, date: '2026-10-18', items: [
     'You can now change or remove a log right on Move. Tap an activity to see its recent logs, or tap anything in "Lately", then Edit or Remove.',
     'Gym sessions too: open one and tap "Fix this workout" or "Remove". No more trips to Days for it.'

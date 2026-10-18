@@ -1,8 +1,8 @@
 import { get, save, uid, addMoment, removeById } from '../store.js';
-import { WEATHERS, weatherByName } from '../data.js';
+import { WEATHERS, WEATHER_TIPS, weatherByName } from '../data.js';
 import { esc, nav, backLink, dateChip, logDate, timeOf, prettyDate } from '../ui.js';
 
-let picked = [], strength = 'steady', reply = '';
+let picked = [], strength = 'steady', reply = '', lastName = '';
 
 export function mount(root) {
   render(root);
@@ -23,6 +23,7 @@ export function mount(root) {
       st.weather.push(entry);
       addMoment('mind', 'Weather: ' + types.join(' + ').toLowerCase() + ', ' + strength, date, { ref: entry.id });
       reply = WEATHERS[picked[picked.length - 1]][4];
+      lastName = types[types.length - 1];
       picked = []; save(); render(root); return;
     }
     if ((b = t.closest('[data-del]'))) { removeById('weather', b.dataset.del); render(root); }
@@ -32,6 +33,8 @@ export function mount(root) {
 function render(root) {
   const st = get(), date = logDate();
   const todays = st.weather.filter(w => w.date === date).sort((a, b) => a.ts - b.ts);
+  const focus = picked.length ? WEATHERS[picked[picked.length - 1]][0] : lastName;
+  const tips = (focus && WEATHER_TIPS[focus]) || [];
   root.innerHTML =
     '<div class="top">' + backLink() + dateChip() + '</div>' +
     '<div><h1>What\'s the weather inside?</h1><p class="sub">Pick one, or mix two. Log as often as it changes. No weather is wrong.</p></div>' +
@@ -43,6 +46,7 @@ function render(root) {
       '<button type="button" class="btn" data-log' + (picked.length ? '' : ' disabled') + '>' + (picked.length ? 'Log ' + esc(picked.map(i => WEATHERS[i][0].toLowerCase()).join(' + ')) : 'Pick a weather') + '</button>' +
       (reply ? '<div class="say" style="color:var(--blue)">' + esc(reply) + '</div>' : '') +
     '</div>' +
+    (tips.length ? '<div class="card"><div class="lbl">Things that might help</div><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">' + tips.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' : '') +
     '<div class="card"><div class="lbl">' + esc(prettyDate(date)) + ' so far</div>' +
       (todays.length ? todays.map(w => '<div class="entry"><span class="t">' + timeOf(w.ts) + '</span><span class="wx-dots">' + w.types.map(n => '<i style="background:' + (weatherByName(n) || [0, 0, '#ccc'])[2] + '"></i>').join('') + '</span><span>' + esc(w.types.join(' + ')) + ', ' + esc(w.strength) + '</span><button type="button" class="x" data-del="' + w.id + '" aria-label="Remove this entry">×</button></div>').join('')
         : '<p class="empty">Nothing yet. Whenever you\'re ready.</p>') +

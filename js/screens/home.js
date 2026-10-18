@@ -3,6 +3,7 @@ import { mulberry32 } from '../sky-model.js';
 import { patches, PAT } from './quilt.js';
 import { ensureGoals, checkFinished, openLog } from '../goals.js';
 import { AREAS, weatherByName } from '../data.js';
+import { quoteFor } from '../quotesoftheday.js';
 import { fromJar } from './wins.js';
 import { esc, him, nav, pop, pick, setLogDate, toast } from '../ui.js';
 
@@ -61,6 +62,8 @@ function render() {
 
   const wxText = wx.length ? 'Inside today: ' + esc(lastWx.types.join(' + ').toLowerCase()) : 'How\'s the weather inside?';
   const wxDots = wx.length ? '<span class="wx-dots">' + lastWx.types.map(t => '<i style="background:' + (weatherByName(t) || [0, 0, '#ccc'])[2] + '"></i>').join('') + '</span>' : '<b>+</b>';
+  // a quote for today: the same one all day, a new one tomorrow
+  const quoteCard = '<div class="card"><div class="lbl">Today\'s thought</div><p class="say">' + esc(quoteFor(d)) + '</p></div>';
 
   root.innerHTML =
     '<div class="top"><div><div class="lbl">' + new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }) + '</div><h1>' + greet + name + '</h1></div></div>' +
@@ -75,11 +78,13 @@ function render() {
     '</div>' +
     (soft
       ? '<a class="game" href="#/skate"><span><b>Skate home</b><small>' + ((st.games && st.games.skate && st.games.skate.best) ? 'Your best: ' + st.games.skate.best + ' m' : 'Jump the bumps, grab the stars') + '</small></span><b class="go">Play ›</b></a>' +
+        quoteCard +
         (() => { const m = fromJar(true); return m ? '<a class="fromjar" href="#/wins"><small>From your jar · ' + esc(new Date(m.ts).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })) + '</small>' + esc(m.text) + '<em>You did this. You can again.</em></a>' : ''; })() +
         '<a class="rowlink" href="#/letters?open=1"><span>' + (st.letters.length ? 'A letter from good-day you' : 'No letters yet. Write one on a good day.') + '</span><b>›</b></a>' +
         '<button type="button" class="btn ghost wide" data-unheavy>Back to a regular day</button>'
       : (st.active ? '<a class="rowlink" href="#/move" style="border-color:var(--blue)"><span>' + esc(st.active.n) + ' is still open</span><b>›</b></a>' : '') +
         '<a class="rowlink" href="#/weather"><span>' + wxText + '</span>' + wxDots + '</a>' +
+        quoteCard +
         '<div class="quick">' +
           '<a href="#/food">' + svg(ICONS.food) + 'Food</a>' +
           '<a href="#/rest">' + svg(ICONS.rest) + 'Rest</a>' +
