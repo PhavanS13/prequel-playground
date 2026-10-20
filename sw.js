@@ -1,7 +1,7 @@
 
  // Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v53';
+const VERSION = 'prequel-v54';
 
 const SHELL = [
   './',
@@ -21,7 +21,7 @@ const SHELL = [
   'js/quotesoftheday.js',
   'data/foods.json',
 
-  // App screens, including the calendar and updated rest screen
+  // App screens
   'js/screens/home.js',
   'js/screens/weather.js',
   'js/screens/move.js',
@@ -30,6 +30,7 @@ const SHELL = [
   'js/screens/wins.js',
   'js/screens/mind.js',
   'js/screens/vent.js',
+  'js/screens/journal.js',
   'js/screens/minesweeper.js',
   'js/screens/letters.js',
   'js/screens/days.js',

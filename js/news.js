@@ -5,6 +5,15 @@ import { dayDate } from './pdf.js';
 // What's new: a few plain lines for every update, newest first.
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
+  {
+    v: 54,
+    date: '2026-10-20',
+    items: [
+      'A new Journal page gives you a space to write about your thoughts, your days and anything in between.',
+      'Save entries and come back to read them whenever you like.',
+      'You can edit or delete an entry, and your journal is included in your Prequel data backup.'
+    ]
+  },
   { v: 53, date: '2026-10-18', items: [
     'You can now mark when you fell asleep or woke up as approximate, if you only remember roughly.',
     'Your sleep diary keeps that distinction, so you and your doctor can tell which times are estimates.'

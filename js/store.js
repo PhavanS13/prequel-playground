@@ -1,4 +1,5 @@
-// Everything you log lives here, on your phone only (IndexedDB), with a JSON backup you can export/import.
+
+ // Everything you log lives here, on your phone only (IndexedDB), with a JSON backup you can export/import.
 const DB_NAME = 'prequel', STORE = 'kv', KEY = 'state';
 let state = null;
 let db = null;
@@ -44,6 +45,8 @@ function fresh() {
     cycleDays: [],
     pendingSleep: null,
     mind: [],
+    vent: [],
+    journal: [],
     letters: [],
     foods: [],
     heavy: {},
@@ -92,6 +95,7 @@ export async function load() {
   if (!saved) { try { const raw = localStorage.getItem('prequel-state'); if (raw) saved = JSON.parse(raw); } catch (e) { /* private mode */ } }
   state = Object.assign(fresh(), saved || {});
   state.settings = Object.assign(fresh().settings, state.settings || {});
+  state.journal = Array.isArray(state.journal) ? state.journal : [];
   await loadUndo();
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e) { /* not supported */ }
   return state;
@@ -172,7 +176,7 @@ export function exportJSON() {
 }
 
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
-const RECORDS = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'mind', 'letters', 'foods', 'comfort', 'customWorkouts', 'myFoods', 'meals', 'weights', 'goals', 'goalLogs', 'events'];
+const RECORDS = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'mind', 'vent', 'journal', 'letters', 'foods', 'comfort', 'customWorkouts', 'myFoods', 'meals', 'weights', 'goals', 'goalLogs', 'events'];
 const DATED = ['moments', 'weather', 'sessions', 'rests', 'doctorNotes', 'cycleDays', 'activities', 'foods', 'meals', 'weights', 'goalLogs', 'events'];
 const MAPS = ['heavy', 'lifts', 'units', 'customExercises', 'workoutAdds', 'subsAdded', 'settings', 'sky', 'games'];
 
@@ -235,6 +239,7 @@ export async function restoreBackup(data, { withoutCopy = false } = {}) {
   const seen = state.newsSeen;
   state = Object.assign(fresh(), d);
   state.settings = Object.assign(fresh().settings, d.settings || {});
+  state.journal = Array.isArray(state.journal) ? state.journal : [];
   if (seen != null) state.newsSeen = seen;
   await saveNow();
   return 'ok';
@@ -246,6 +251,7 @@ export async function undoRestore() {
   const seen = state.newsSeen;
   state = Object.assign(fresh(), u.state);
   state.settings = Object.assign(fresh().settings, u.state.settings || {});
+  state.journal = Array.isArray(state.journal) ? state.journal : [];
   if (seen != null) state.newsSeen = seen;
   await saveNow();
   try { await writeUndo(null); } catch (e) { /* it expires anyway */ }
