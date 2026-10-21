@@ -1,7 +1,7 @@
 
  // Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v54';
+const VERSION = 'prequel-v55';
 
 const SHELL = [
   './',
@@ -32,6 +32,7 @@ const SHELL = [
   'js/screens/vent.js',
   'js/screens/journal.js',
   'js/screens/minesweeper.js',
+  'js/screens/breather.js',
   'js/screens/letters.js',
   'js/screens/days.js',
   'js/screens/me.js',

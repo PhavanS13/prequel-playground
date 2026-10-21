@@ -16,6 +16,7 @@ import * as sky from './screens/sky.js';
 import * as quilt from './screens/quilt.js';
 import * as skate from './screens/skate.js';
 import * as minesweeper from './screens/minesweeper.js';
+import * as breather from './screens/breather.js';
 import * as settings from './screens/settings.js';
 import * as share from './screens/share.js';
 import * as vent from './screens/vent.js';
@@ -37,6 +38,7 @@ const ROUTES = {
   quilt,
   skate,
   minesweeper,
+  breather,
   settings,
   share,
   vent
