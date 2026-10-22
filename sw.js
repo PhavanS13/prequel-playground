@@ -1,7 +1,7 @@
 
  // Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v55';
+const VERSION = 'prequel-v56';
 
 const SHELL = [
   './',
@@ -148,7 +148,7 @@ self.addEventListener('fetch', event => {
   }
 
   // Other resources: return cached content immediately
-  // when available and refresh the cache from the network.
+  // when available and refresh it from the network.
   event.respondWith(
     caches.open(VERSION).then(async cache => {
       const cached = await cache.match(

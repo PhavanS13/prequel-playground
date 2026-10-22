@@ -6,6 +6,15 @@ import { dayDate } from './pdf.js';
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
   {
+    v: 56,
+    date: '2026-10-22',
+    items: [
+      'The mood check-in now has 24 emotions and feelings to choose from.',
+      'Pick one feeling or combine two, and choose how strongly you feel them.',
+      'Each mood has its own supportive reply and suggestions for things that might help.'
+    ]
+  },
+  {
     v: 55,
     date: '2026-10-21',
     items: [
