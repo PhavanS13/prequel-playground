@@ -1,10 +1,19 @@
-
 import { esc, openSheet, him } from './ui.js';
 import { dayDate } from './pdf.js';
 
 // What's new: a few plain lines for every update, newest first.
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
+  {
+    v: 57,
+    date: '2026-10-22',
+    items: [
+      'A new Insights section brings your recorded data together in one place.',
+      'Explore counts and patterns across mood check-ins, rest, food, movement and other records, with 7-day, 30-day, 90-day and all-time views.',
+      'Insights compares which logs appear on the same dates. It cannot prove that one thing caused another, and a missing log does not mean something did not happen.',
+      'You can now optionally set a PIN lock in Settings.'
+    ]
+  },
   {
     v: 56,
     date: '2026-10-22',
@@ -229,6 +238,7 @@ export function openNews(entries, all) {
   }
 
   const missed = entries.length - 1;
+
   const sheet = openSheet(
     head('A few new things') +
     '<div class="newslist">' + newsHtml(entries.slice(0, 1)) + '</div>' +

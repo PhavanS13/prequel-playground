@@ -1,4 +1,3 @@
-
 import { load, get, save, today, dateKey, hasData } from './store.js';
 import { NEWS, LATEST, openNews } from './news.js';
 import * as home from './screens/home.js';
@@ -12,6 +11,8 @@ import * as letters from './screens/letters.js';
 import * as journal from './screens/journal.js';
 import * as days from './screens/days.js';
 import * as me from './screens/me.js';
+import * as insights from './screens/insights.js';
+import { lockEnabled, checkPin } from './app-lock.js';
 import * as sky from './screens/sky.js';
 import * as quilt from './screens/quilt.js';
 import * as skate from './screens/skate.js';
@@ -34,6 +35,7 @@ const ROUTES = {
   journal,
   days,
   me,
+  insights,
   sky,
   quilt,
   skate,
@@ -63,7 +65,6 @@ function route() {
   if (current && current.unmount) current.unmount();
   current = screen;
 
-  // A fresh element per screen, so no screen's listeners leak into the next.
   const next = document.createElement('main');
   next.id = 'app';
   next.className = 'screen screen-' + (ROUTES[name] ? name : 'home');
@@ -107,6 +108,8 @@ const helloDay = () => dateKey(new Date(Date.now() - 5 * 3600 * 1000));
 
 function hello() {
   const st = get();
+  if (!st || document.getElementById('prequel-lock')) return;
+
   const now = Date.now();
   const d = helloDay();
 
@@ -179,13 +182,88 @@ function hello() {
   setTimeout(go, reduceMotion ? 1400 : 2400);
 }
 
+// Optional PIN screen.
+function showLock() {
+  if (!lockEnabled()) return;
+
+  let overlay = document.getElementById('prequel-lock');
+
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'prequel-lock';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+
+    overlay.innerHTML =
+      '<div style="width:min(90%,360px);margin:15vh auto;padding:24px;background:var(--card,#fff);border-radius:20px">' +
+        '<h1>Prequel is locked</h1>' +
+        '<p>Enter your PIN to continue.</p>' +
+        '<form id="prequel-unlock-form">' +
+          '<label for="prequel-unlock-pin">PIN</label>' +
+          '<input id="prequel-unlock-pin" type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" autocomplete="current-password" required style="width:100%;margin:8px 0 14px">' +
+          '<p id="prequel-lock-error" role="status"></p>' +
+          '<button class="btn wide" type="submit">Unlock</button>' +
+        '</form>' +
+      '</div>';
+
+    Object.assign(overlay.style, {
+      position: 'fixed',
+      inset: '0',
+      zIndex: '99999',
+      background: 'var(--paper, #FAF3DC)',
+      overflowY: 'auto'
+    });
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('form').addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const input = overlay.querySelector('#prequel-unlock-pin');
+      const error = overlay.querySelector('#prequel-lock-error');
+      const button = overlay.querySelector('button[type="submit"]');
+      const pin = input.value;
+
+      if (!/^\d{4,8}$/.test(pin)) {
+        error.textContent = 'Enter 4 to 8 digits.';
+        return;
+      }
+
+      button.disabled = true;
+      error.textContent = 'Checking…';
+
+      try {
+        const ok = await checkPin(pin);
+
+        if (ok) {
+          overlay.remove();
+          route();
+          hello();
+          return;
+        }
+
+        input.value = '';
+        error.textContent = 'That PIN did not match. Try again.';
+        input.focus();
+      } catch (err) {
+        error.textContent = 'Could not check the PIN. Try again.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  const input = overlay.querySelector('#prequel-unlock-pin');
+  if (input) input.focus();
+}
+
 // Coming back to the app counts too.
 document.addEventListener('visibilitychange', () => {
   const st = get();
   if (!st) return;
 
   if (document.visibilityState === 'visible') {
-    hello();
+    if (!document.getElementById('prequel-lock')) hello();
   } else {
     st.lastSeen = Date.now();
     save();
@@ -207,7 +285,11 @@ function whatsNew() {
 
   if (!fresh.length) return;
 
-  if (document.querySelector('.hello') || document.getElementById('sheet')) {
+  if (
+    document.querySelector('.hello') ||
+    document.getElementById('sheet') ||
+    document.getElementById('prequel-lock')
+  ) {
     setTimeout(whatsNew, 500);
     return;
   }
@@ -222,7 +304,12 @@ load().then(() => {
 
   applyTheme();
   route();
-  hello();
+
+  if (lockEnabled()) {
+    showLock();
+  } else {
+    hello();
+  }
 
   setTimeout(whatsNew, 300);
   document.documentElement.classList.add('ready');

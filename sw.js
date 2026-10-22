@@ -1,7 +1,6 @@
-
- // Offline support: the app opens even with no signal.
+// Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v56';
+const VERSION = 'prequel-v57';
 
 const SHELL = [
   './',
@@ -11,6 +10,7 @@ const SHELL = [
 
   // Core app files
   'js/app.js',
+  'js/app-lock.js',
   'js/store.js',
   'js/data.js',
   'js/ui.js',
@@ -36,6 +36,7 @@ const SHELL = [
   'js/screens/letters.js',
   'js/screens/days.js',
   'js/screens/me.js',
+  'js/screens/insights.js',
   'js/screens/sky.js',
   'js/screens/quilt.js',
   'js/screens/skate.js',
@@ -125,8 +126,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
-  // Navigation: try the network first, then fall back to
-  // the cached app when offline.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
@@ -147,8 +146,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Other resources: return cached content immediately
-  // when available and refresh it from the network.
   event.respondWith(
     caches.open(VERSION).then(async cache => {
       const cached = await cache.match(
