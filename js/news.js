@@ -6,6 +6,25 @@ import { dayDate } from './pdf.js';
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
   {
+    v: 59,
+    date: '2026-10-22',
+    items: [
+      'Food and Move now work together to show a daily summary of calories, protein and movement.',
+      'You can set your own daily calorie and protein targets and track your progress throughout the day.',
+      'You can manually record your daily step count.'
+    ]
+  },
+  {
+    v: 58,
+    date: '2026-10-22',
+    items: [
+      'Food and Move now share a daily summary of logged calories, protein and movement.',
+
+
+Your movement and workout activity is displayed alongside your food log, making it easier to see your daily activity in one place.
+    ]
+  },
+  {
     v: 58,
     date: '2026-10-22',
     items: [
