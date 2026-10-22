@@ -1,4 +1,5 @@
-// Small shared helpers: escaping, sheets, toasts, the character, the date you're logging for.
+
+ // Small shared helpers: escaping, sheets, toasts, the character, the date you're logging for.
 import { today, addDays, parseKey } from './store.js';
 
 export const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -192,7 +193,6 @@ const NAV = [
   ['days', 'Days', '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
   ['move', 'Move', '<path d="M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12"/>'],
   ['mind', 'Mind', '<path d="M5 4h14v12l-4 4H5z"/><path d="M15 20v-4h4"/>'],
-  ['insights', 'Insights', '<path d="M4 19V5M4 19h17"/><path d="M8 15v-4M13 15V7M18 15V3"/>'],
   ['me', 'Me', '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>']
 ];
 

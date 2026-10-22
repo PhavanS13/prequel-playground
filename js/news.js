@@ -1,3 +1,4 @@
+
 import { esc, openSheet, him } from './ui.js';
 import { dayDate } from './pdf.js';
 
@@ -5,12 +6,18 @@ import { dayDate } from './pdf.js';
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
   {
+    v: 58,
+    date: '2026-10-22',
+    items: [
+      'Food and Move now share a daily summary of logged calories, protein and movement.',
+      'You can enter your own calorie and protein targets if you already have appropriate guidance.',
+      'Step counts are entered manually for now; automatic Apple Health and Android Health Connect imports are not available yet.'
+    ]
+  },
+  {
     v: 57,
     date: '2026-10-22',
     items: [
-      'A new Insights section brings your recorded data together in one place.',
-      'Explore counts and patterns across mood check-ins, rest, food, movement and other records, with 7-day, 30-day, 90-day and all-time views.',
-      'Insights compares which logs appear on the same dates. It cannot prove that one thing caused another, and a missing log does not mean something did not happen.',
       'You can now optionally set a PIN lock in Settings.'
     ]
   },

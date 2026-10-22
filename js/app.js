@@ -1,4 +1,5 @@
-import { load, get, save, today, dateKey, hasData } from './store.js';
+
+import { load, get, save, dateKey, hasData } from './store.js';
 import { NEWS, LATEST, openNews } from './news.js';
 import * as home from './screens/home.js';
 import * as weather from './screens/weather.js';
@@ -11,7 +12,6 @@ import * as letters from './screens/letters.js';
 import * as journal from './screens/journal.js';
 import * as days from './screens/days.js';
 import * as me from './screens/me.js';
-import * as insights from './screens/insights.js';
 import { lockEnabled, checkPin } from './app-lock.js';
 import * as sky from './screens/sky.js';
 import * as quilt from './screens/quilt.js';
@@ -22,6 +22,7 @@ import * as settings from './screens/settings.js';
 import * as share from './screens/share.js';
 import * as vent from './screens/vent.js';
 import { closeSheet, setLogDate, esc, reduceMotion } from './ui.js';
+import { fuelCardHtml, bindFuelCard } from './fuel.js';
 
 const ROUTES = {
   home,
@@ -35,7 +36,6 @@ const ROUTES = {
   journal,
   days,
   me,
-  insights,
   sky,
   quilt,
   skate,
@@ -73,6 +73,17 @@ function route() {
   root = next;
 
   screen.mount(root, params);
+
+  // Shared Food + Move summary.
+  if (name === 'food' || name === 'move') {
+    const panel = document.createElement('div');
+    panel.innerHTML = fuelCardHtml();
+
+    if (panel.firstElementChild) {
+      root.prepend(panel.firstElementChild);
+      bindFuelCard(root);
+    }
+  }
 
   if (!params.keepScroll) window.scrollTo(0, 0);
 }
