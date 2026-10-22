@@ -16,14 +16,13 @@ export const NEWS = [
     ]
   },
   {
-    v: 58,
-    date: '2026-10-22',
-    items: [
-      'Food and Move now share a daily summary of logged calories, protein and movement.',
-      'You can enter your own calorie and protein targets if you already have appropriate guidance.',
-      'Step counts are entered manually for now; automatic Apple Health and Android Health Connect imports are not available yet.'
-    ]
-  },
+  v: 58,
+  date: '2026-10-18',
+  items: [
+    'Food and movement now share a clearer daily view.',
+    'Your movement and workout activity is displayed alongside your food log.'
+  ]
+},
   {
     v: 57,
     date: '2026-10-22',
