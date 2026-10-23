@@ -1,122 +1,134 @@
 
-const AREAS = [
-  { id: 'mind', name: 'Mind', icon: 'brain' },
-  { id: 'body', name: 'Body', icon: 'activity' },
-  { id: 'life', name: 'Life', icon: 'sun' }
-];
-
-const EXERCISES = {
-  mind: [
-    { name: 'Brain dump', desc: 'Get everything out of your head.', time: '3 min' },
-    { name: 'Name the feeling', desc: 'Put a name to what you are experiencing.', time: '2 min' },
-    { name: 'Thought check', desc: 'Separate facts from assumptions.', time: '3 min' },
-    { name: 'Tiny gratitude', desc: 'Notice one thing that went okay.', time: '1 min' }
-  ],
-  body: [
-    { name: 'Stretch break', desc: 'Release some tension with gentle movement.', time: '3 min' },
-    { name: 'Water break', desc: 'Pause and have a drink of water.', time: '1 min' },
-    { name: 'Fresh air', desc: 'Step outside or open a window.', time: '5 min' },
-    { name: 'Body scan', desc: 'Notice where you are holding tension.', time: '2 min' }
-  ],
-  life: [
-    { name: 'Clear one thing', desc: 'Make one small space feel calmer.', time: '3 min' },
-    { name: 'One next step', desc: 'Choose one manageable thing to do next.', time: '2 min' },
-    { name: 'Take a pause', desc: 'Give yourself a moment without a task.', time: '2 min' },
-    { name: 'Reach out', desc: 'Connect with someone you trust.', time: '5 min' }
-  ]
+ // Fixed content: your Project Athletic playbook, the moods, and the parts of life.
+export const AREAS = {
+  move: { name: 'Move', colour: '#1F55D0' },
+  food: { name: 'Food', colour: '#E5893D' },
+  rest: { name: 'Rest', colour: '#D9A400' },
+  win: { name: 'Tiny win', colour: '#D6698C' },
+  mind: { name: 'Mind', colour: '#3E9E6E' },
+  goal: { name: 'Your goals', colour: '#7A5BC7' }
 };
 
-const WORKOUTS = [
-  { name: 'Gentle reset', desc: 'Easy movement to help you reset.', time: '5 min' },
-  { name: 'Walk break', desc: 'Take a short walk at your own pace.', time: '10 min' },
-  { name: 'Stretch', desc: 'Loosen up with a few comfortable stretches.', time: '5 min' }
-];
-
-const REST_GUIDE = [
-  { name: 'Quick pause', desc: 'Step away from what you are doing for a moment.', time: '2 min' },
-  { name: 'Quiet time', desc: 'Give yourself a little space without pressure.', time: '5 min' },
-  { name: 'Wind down', desc: 'Choose something calm before bed.', time: '10 min' }
-];
-
-// Weather colours use a coordinated, softer palette so the picker and ribbon
-// feel consistent with the app's themes while keeping each mood distinguishable.
-const WEATHERS = [
-  { name: 'Happy', icon: 'sun', color: '#F2C14E', reply: 'Let yourself enjoy this moment.', pose: 'sunny' },
-  { name: 'Content', icon: 'cloud-sun', color: '#E6A15C', reply: 'It is okay to appreciate things as they are.', pose: 'calm' },
-  { name: 'Mixed', icon: 'cloud-sun', color: '#9AAED6', reply: 'You can feel more than one thing at once.', pose: 'mixed' },
-  { name: 'Meh', icon: 'cloud', color: '#A6A29A', reply: 'You do not have to feel a certain way today.', pose: 'neutral' },
-  { name: 'Confused', icon: 'cloud-fog', color: '#B5B0A8', reply: 'You can take your time figuring things out.', pose: 'foggy' },
-  { name: 'Sad', icon: 'cloud-rain', color: '#7298C8', reply: 'Be gentle with yourself today.', pose: 'rainy' },
-  { name: 'Down', icon: 'cloud-rain', color: '#5578B8', reply: 'You do not have to handle everything at once.', pose: 'rainy' },
-  { name: 'Overwhelmed', icon: 'cloud-lightning', color: '#8870B8', reply: 'Try taking one small thing at a time.', pose: 'stormy' },
-  { name: 'Anxious', icon: 'wind', color: '#5B9E9A', reply: 'Come back to what is in front of you, one moment at a time.', pose: 'windy' },
-  { name: 'Burnt out', icon: 'thermometer-sun', color: '#D9785D', reply: 'Rest is a valid next step.', pose: 'hot' },
-  { name: 'Numb', icon: 'cloud', color: '#8BA5B8', reply: 'You do not have to force yourself to feel something.', pose: 'overcast' },
-  { name: 'Relieved', icon: 'cloud-sun', color: '#B88ACB', reply: 'Give yourself a moment to breathe out.', pose: 'clearing' },
-  { name: 'Peaceful', icon: 'moon', color: '#5B6F9C', reply: 'You can stay with this quiet moment.', pose: 'calm' },
-  { name: 'Angry', icon: 'flame', color: '#C65D55', reply: 'Your feelings matter. Give yourself space before reacting.', pose: 'stormy' },
-  { name: 'Lonely', icon: 'cloud-rain', color: '#8586AE', reply: 'You deserve connection, even when it feels far away.', pose: 'rainy' },
-  { name: 'Stressed', icon: 'cloud-lightning', color: '#B86B8C', reply: 'Focus on the next manageable step, not everything at once.', pose: 'stormy' },
-  { name: 'Frustrated', icon: 'wind', color: '#C47A48', reply: 'It is okay to pause and try again later.', pose: 'windy' },
-  { name: 'Excited', icon: 'sun', color: '#E6B84C', reply: 'Enjoy the energy and give yourself room to explore it.', pose: 'sunny' },
-  { name: 'Grateful', icon: 'heart', color: '#CC8BA8', reply: 'Take a moment to notice what matters to you.', pose: 'clearing' },
-  { name: 'Confident', icon: 'sun', color: '#4D9C8D', reply: 'Trust yourself to take the next step.', pose: 'sunny' },
-  { name: 'Hopeful', icon: 'cloud-sun', color: '#8EA9D8', reply: 'Small possibilities can still matter.', pose: 'clearing' },
-  { name: 'Bored', icon: 'cloud', color: '#A6A39A', reply: 'A small change of pace might help.', pose: 'overcast' },
-  { name: 'Proud', icon: 'sun', color: '#D98A55', reply: 'Give yourself credit for what you have done.', pose: 'sunny' },
-  { name: 'Curious', icon: 'sparkles', color: '#4C9CA6', reply: 'Follow what interests you, one question at a time.', pose: 'clearing' }
-];
-
-const weatherByName = Object.fromEntries(WEATHERS.map(w => [w.name, w]));
-
-const WEATHER_TIPS = {
-  Happy: ['Enjoy something you love.', 'Share your good mood with someone.'],
-  Content: ['Notice what is going well.', 'Let this moment be enough.'],
-  Mixed: ['Make room for all your feelings.', 'You do not need to resolve everything now.'],
-  Meh: ['Try one small change of pace.', 'Keep your expectations gentle today.'],
-  Confused: ['Write down what you know so far.', 'Give yourself time to think.'],
-  Sad: ['Choose something comforting.', 'Reach out to someone you trust if you need support.'],
-  Down: ['Make your next step small.', 'You deserve patience and care.'],
-  Overwhelmed: ['Pick just one next step.', 'Pause and take a few comfortable breaths.'],
-  Anxious: ['Focus on what you can control.', 'Bring your attention back to the present.'],
-  'Burnt out': ['Give yourself permission to rest.', 'Put off anything that can reasonably wait.'],
-  Numb: ['Keep things simple for now.', 'Notice your surroundings without pressure.'],
-  Relieved: ['Let yourself unwind.', 'Notice what feels lighter now.'],
-  Peaceful: ['Protect a little quiet time.', 'Enjoy the slower pace.'],
-  Angry: ['Take space before responding.', 'Choose a safe way to release tension.'],
-  Lonely: ['Send a small message to someone you trust.', 'Choose a comforting activity.'],
-  Stressed: ['Break a task into smaller pieces.', 'Take a short pause between tasks.'],
-  Frustrated: ['Step back and return when ready.', 'Try a different approach if you can.'],
-  Excited: ['Enjoy what you are looking forward to.', 'Channel your energy into something meaningful.'],
-  Grateful: ['Notice one thing you appreciate.', 'Tell someone you value them.'],
-  Confident: ['Recognise what you have learned.', 'Take the next step at your own pace.'],
-  Hopeful: ['Choose one small action toward what matters.', 'Keep space for possibilities.'],
-  Bored: ['Try a small new activity.', 'Change your surroundings for a moment.'],
-  Proud: ['Acknowledge the effort you put in.', 'Let yourself enjoy the progress.'],
-  Curious: ['Follow one question that interests you.', 'Learn something small today.']
+// t: wr = weight × reps, hold = seconds, mins = minutes. rest: c = compound, i = isolation. m = machine (kg or plate #)
+export const EXERCISES = {
+  legpress: { n: 'Leg press', t: 'wr', m: 1, rest: 'c', subs: ['Smith squat', 'Goblet squat', 'Split squat'] },
+  chest: { n: 'Chest press', t: 'wr', m: 1, rest: 'c', subs: ['Flat dumbbell press', 'Incline dumbbell press', 'Smith press'] },
+  incline: { n: 'Incline press', t: 'wr', m: 1, rest: 'c', subs: ['Incline dumbbells', 'Flat press'] },
+  lat: { n: 'Lat pulldown', t: 'wr', m: 1, rest: 'c', subs: ['Assisted pull-up', 'Another pulldown station'] },
+  row: { n: 'Seated cable row', t: 'wr', m: 1, rest: 'c', subs: ['Machine row', 'Chest-supported dumbbell row'] },
+  shoulder: { n: 'Shoulder press', t: 'wr', m: 1, rest: 'c', subs: ['Seated dumbbell press'] },
+  curl: { n: 'Biceps curl', t: 'wr', m: 0, rest: 'i', subs: ['Dumbbell curl', 'Fixed-bar curl', 'Hammer curl'] },
+  hammer: { n: 'Hammer curl', t: 'wr', m: 0, rest: 'i', subs: ['Dumbbell curl'] },
+  tri: { n: 'Triceps pushdown', t: 'wr', m: 1, rest: 'i', subs: ['Overhead dumbbell extension', 'Machine extension'] },
+  ohtri: { n: 'Overhead triceps ext.', t: 'wr', m: 0, rest: 'i', subs: ['Cable pushdown'] },
+  crunch: { n: 'Ab crunch', t: 'wr', m: 1, rest: 'i', subs: ['Cable crunch', 'Plank'] },
+  legcurl: { n: 'Seated leg curl', t: 'wr', m: 1, rest: 'c', subs: ['Romanian deadlift', 'Swiss-ball hamstring curl'] },
+  rdl: { n: 'Romanian deadlift', t: 'wr', m: 0, rest: 'c', subs: ['Seated leg curl'] },
+  legext: { n: 'Leg extension', t: 'wr', m: 1, rest: 'i', subs: ['Split squat', 'Step-up'] },
+  calf: { n: 'Dumbbell calf raise', t: 'wr', m: 0, rest: 'i', subs: ['Calf machine'] },
+  plank: { n: 'Plank', t: 'hold', m: 0, rest: 'i', subs: ['Ab crunch'] },
+  face: { n: 'Face pulls', t: 'wr', m: 1, rest: 'i', subs: ['Reverse fly'] },
+  lateral: { n: 'Lateral raise', t: 'wr', m: 0, rest: 'i', subs: ['Cable lateral raise'] },
+  split: { n: 'Split squat', t: 'wr', m: 0, rest: 'c', each: 1, subs: ['Step-up'] },
+  pallof: { n: 'Pallof press', t: 'wr', m: 1, rest: 'i', subs: ['Plank'] },
+  walk: { n: 'Easy walk / cycle / row', t: 'mins', m: 0, rest: null, subs: ['Cycle', 'Rower'] },
+  mobility: { n: 'Mobility / stretching', t: 'mins', m: 0, rest: null, subs: [] }
 };
 
-const FOOD_TAGS = [
-  'quick', 'comfort', 'fresh', 'easy', 'warm', 'light'
+const C = '8-12', I = '10-15';
+
+export const WORKOUTS = [
+  { id: 'fbA', n: 'Full Body A', d: 'your main general session', items: [['legpress', '2-3', C], ['chest', '2-3', C], ['lat', '2-3', C], ['shoulder', '2', C], ['curl', '2', I], ['crunch', '2', I]] },
+  { id: 'fbB', n: 'Full Body B', d: 'posterior chain + rows', items: [['legcurl', '2-3', C], ['row', '2-3', C], ['legext', '2', I], ['chest', '2', C], ['tri', '2', I], ['calf', '2', '12-20'], ['plank', '2', '20-60s']] },
+  { id: 'tbe', n: 'Total Body Essential', d: 'only one gym day this week', items: [['legpress', '2-3', C], ['chest', '2-3', C], ['lat', '2-3', C], ['row', '2', C], ['shoulder', '2', C], ['legcurl', '2', C], ['curl', '2', I], ['tri', '2', I], ['calf', '2', '12-20'], ['crunch', '2', I]] },
+  { id: 'min20', n: '20-Minute Minimum', d: 'okay body, terrible motivation', items: [['legpress', '2', C], ['chest', '2', C], ['lat', '2', C]] },
+  { id: 'rec', n: 'Recovery / Light', d: 'want to go, not recovered', items: [['walk', '1', '10-20 min'], ['face', '2', '12-15'], ['plank', '2', '20-45s'], ['calf', '2', 'easy'], ['mobility', '1', '5-10 min']] },
+  { id: 'uA', n: 'Upper A', d: 'horizontal push + vertical pull', items: [['chest', '2-3', C], ['lat', '2-3', C], ['row', '2', C], ['shoulder', '2', C], ['face', '2', '12-15'], ['curl', '2', I], ['tri', '2', I]] },
+  { id: 'lA', n: 'Lower A', d: 'quad emphasis', items: [['legpress', '2-3', C], ['legext', '2', I], ['legcurl', '2', I], ['calf', '2', '12-20'], ['crunch', '2', I]] },
+  { id: 'uB', n: 'Upper B', d: 'incline + back / shoulders', items: [['incline', '2-3', C], ['row', '2-3', C], ['lat', '2', C], ['lateral', '2', '12-20'], ['face', '2', '12-15'], ['hammer', '2', I], ['ohtri', '2', I]] },
+  { id: 'lB', n: 'Lower B', d: 'hamstring / hip hinge', items: [['rdl', '2-3', C], ['legpress', '2', I], ['legcurl', '2', I], ['split', '2', '8-12 each'], ['calf', '2', '12-20'], ['pallof', '2', I]] },
+  { id: 'push', n: 'Push', d: 'chest, shoulders, triceps', items: [['chest', '2-3', C], ['shoulder', '2', C], ['incline', '2', C], ['lateral', '2', '12-20'], ['tri', '2', I]] },
+  { id: 'pull', n: 'Pull', d: 'lats, back, rear delts, biceps', items: [['lat', '2-3', C], ['row', '2-3', C], ['face', '2', '12-15'], ['curl', '2', I], ['hammer', '2', I]] },
+  { id: 'legs', n: 'Legs', d: 'quads, hams, glutes, calves, core', items: [['legpress', '2-3', C], ['legcurl', '2', I], ['rdl', '2', C], ['legext', '2', I], ['calf', '2', '12-20'], ['crunch', '2', I]] }
 ];
 
-const FEELS = [
-  { name: 'Calm', family: 'steady', label: 'Calm' },
-  { name: 'Okay', family: 'steady', label: 'Okay' },
-  { name: 'Tired', family: 'low', label: 'Tired' },
-  { name: 'Sad', family: 'low', label: 'Sad' },
-  { name: 'Anxious', family: 'tense', label: 'Anxious' },
-  { name: 'Stressed', family: 'tense', label: 'Stressed' },
-  { name: 'Happy', family: 'positive', label: 'Happy' },
-  { name: 'Excited', family: 'positive', label: 'Excited' }
+export const REST_GUIDE = { c: '1:30–2:00', i: '1:00–1:30' };
+
+const CLOUD = 'M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7z';
+const CLOUD_UP = 'M7 14h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 7a3.5 3.5 0 0 0 1 7z';
+
+// name, meaning, colour, icon, reply, character pose
+export const WEATHERS = [
+  ['Happy', 'joyful, upbeat', '#F4C430', '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 3 4 3 4-3 4-3M8 9h.01M16 9h.01"/>', 'There it is. Let yourself enjoy the good stuff.', 'cheer'],
+  ['Content', 'comfortable, satisfied', '#F2A65A', '<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 7v3M5 11l2 1.5M19 11l-2 1.5"/>', 'That soft kind of good. You can stay here a while.', 'skate'],
+  ['Mixed', 'a bit of everything', '#9FB8E8', '<path d="M8 3v1.5M3.5 7.5H5M4.6 4.6l1 1"/><circle cx="8.5" cy="8.5" r="2.8"/><path d="M9 19h8a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8 13a3 3 0 0 0 1 6z"/>', 'A bit of everything. You do not have to pick just one feeling.', 'standing'],
+  ['Meh', 'flat, unmotivated', '#A9A398', '<path d="' + CLOUD + '"/>', 'Some days are just meh. You do not have to force it.', 'standing'],
+  ['Confused', 'uncertain, unsure what to think', '#B8B2A6', '<path d="M4 9h16M6 13h12M4 17h16"/>', 'You do not need to figure everything out at once. Just the next step.', 'standing'],
+  ['Sad', 'low, a bit hurt', '#6F96D0', '<path d="' + CLOUD_UP + '"/><path d="M9 18v.5M13 19v.5M16 17v.5"/>', 'It is okay to feel sad. You do not have to pretend otherwise.', 'umbrella'],
+  ['Down', 'really low, having a hard time', '#3F68B0', '<path d="' + CLOUD_UP + '"/><path d="M8 17l-1 4M12 17l-1 4M16 17l-1 4"/>', 'You do not have to fix everything today. Just being here is enough.', 'umbrella'],
+  ['Overwhelmed', 'too much happening at once', '#7A55C0', '<path d="' + CLOUD_UP + '"/><path d="M12 15l-2 4h3l-2 4"/>', 'That is a lot to carry. Let us take one thing at a time.', 'umbrella'],
+  ['Anxious', 'restless, worried, on edge', '#4FA89A', '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/>', 'Everything can feel unsettled when you are anxious. Take one slow breath.', 'standing'],
+  ['Burnt out', 'exhausted, running on empty', '#E0663A', '<circle cx="12" cy="9" r="3.5"/><path d="M12 2.5v1.5M5.5 9H7M17 9h1.5M7.4 4.4l1 1M16.6 4.4l-1 1M4 17c2-1.5 4 1.5 6 0s4 1.5 6 0 3 .5 4 0M4 21c2-1.5 4 1.5 6 0s4 1.5 6 0 3 .5 4 0"/>', 'You have been carrying a lot. Rest is allowed, even before everything is done.', 'nightwatch'],
+  ['Numb', 'disconnected, hard to feel much', '#8FA9C7', '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/>', 'You do not have to force a feeling. Take things gently for now.', 'asleep'],
+  ['Relieved', 'lighter after something difficult', '#C77BD6', '<path d="M3 18a9 9 0 0 1 18 0M6.5 18a5.5 5.5 0 0 1 11 0M10 18a2 2 0 0 1 4 0"/>', 'You made it through that part. Let yourself breathe a little.', 'cheer'],
+  ['Peaceful', 'calm, settled, at ease', '#3C4A8A', '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6z"/>', 'Calm and quiet. You can stay here a while.', 'nightwatch'],
+  ['Angry', 'angry, furious', '#C23B2E', '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>', 'That fire is real. Take a breath before deciding what to do with it.', 'standing'],
+  ['Lonely', 'lonely, missing people', '#6B6F9E', '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', 'Missing people can feel heavy. Consider reaching out to someone you trust.', 'nightwatch'],
+  ['Stressed', 'stressed, too much on', '#B0457A', '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'Too many tabs open in your head. One thing at a time is plenty.', 'standing'],
+  ['Frustrated', 'irritated, things are not working', '#C9792B', '<circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/>', 'Ugh, that is frustrating. Take a moment before having another go.', 'standing'],
+  ['Excited', 'energised, looking forward to something', '#E7B84B', '<path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/>', 'Something has you buzzing. Enjoy having something to look forward to.', 'skate'],
+  ['Grateful', 'appreciative, thankful', '#D58CB6', '<path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6.5-8 11-8 11z"/>', 'Hold onto what matters to you. The little things count too.', 'cheer'],
+  ['Confident', 'capable, sure of yourself', '#4FA89A', '<path d="M12 3l7 4v5c0 4.5-3 7-7 9-4-2-7-4.5-7-9V7z"/><path d="M9 12l2 2 4-4"/>', 'You can trust yourself to take the next step.', 'standing'],
+  ['Hopeful', 'optimistic, looking ahead', '#9FB8E8', '<path d="M3 17l6-6 4 4 8-9M15 6h6v6"/>', 'You do not need every answer yet. A little hope is enough to start.', 'cheer'],
+  ['Bored', 'uninterested, wanting something to do', '#A6A39A', '<circle cx="12" cy="12" r="9"/><path d="M8 10h.01M16 10h.01M9 16h6"/>', 'Feeling stuck in a dull moment? Try changing one small thing around you.', 'standing'],
+  ['Proud', 'pleased with yourself, recognising progress', '#E5893D', '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/>', 'Give yourself credit. You did something worth recognising.', 'cheer'],
+  ['Curious', 'interested, wanting to understand', '#4A9CA6', '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1.5 1-1.5 1.5-1.5 3M12 17h.01"/>', 'Follow that curiosity. You might discover something interesting.', 'standing']
 ];
 
-const feelFamily = Object.fromEntries(FEELS.map(f => [f.name, f.family]));
-const feelLabel = Object.fromEntries(FEELS.map(f => [f.name, f.label]));
+export const weatherByName = n => WEATHERS.find(w => w[0] === n);
 
-const NIGHT_THINGS = [
-  'Put your phone down for a few minutes.',
-  'Prepare one small thing for tomorrow.',
-  'Choose something relaxing to do.',
-  'Give yourself permission to call it a day.'
+// Things that might help, keyed by mood name.
+export const WEATHER_TIPS = {
+  'Happy': ['Make time for something you enjoy', 'Share the good news or moment with someone', 'Write down what made today feel good'],
+  'Content': ['Stay in the moment for a little while', 'Put your phone down and enjoy what you are doing', 'Notice one thing you appreciate about today'],
+  'Mixed': ['Name the different feelings you have without judging them', 'Do one small thing you have been putting off', 'Take a short walk or a quiet break'],
+  'Meh': ['Pick one tiny task, or give yourself permission to rest', 'Put on music or a podcast you like', 'Get some fresh air if you feel up to it'],
+  'Confused': ['Write down what you know and what you are unsure about', 'Pick one small next step instead of solving everything', 'Ask someone you trust for another perspective'],
+  'Sad': ['Talk to someone you trust, even just by text', 'Read something comforting or put on a favourite show', 'A warm drink and a quiet break can help'],
+  'Down': ['Tell someone you trust how you are feeling', 'Focus on food, water, rest, and one manageable thing', 'If this feeling sticks around or gets harder to handle, consider talking with a trusted adult or health professional'],
+  'Overwhelmed': ['Write down what is on your mind, then choose just one thing', 'Take a short break away from the screen', 'Try slow breathing: in for 4, out for 6', 'Ask someone for help with one thing'],
+  'Anxious': ['Try slow breathing: in for 4, out for 6', 'Name five things you can see around you', 'Talk to someone you trust about what is worrying you', 'Focus on what you can do right now'],
+  'Burnt out': ['Take a proper break without trying to be productive', 'Shrink your to-do list to what is genuinely necessary', 'Eat something, drink water, and give yourself time to rest'],
+  'Numb': ['You do not have to force yourself to feel differently', 'Try a gentle grounding activity, like noticing what is around you', 'Consider telling someone you trust that you feel disconnected'],
+  'Relieved': ['Give yourself a moment to unwind', 'Notice what helped you get through the difficult part', 'Do something calm to mark that it is over'],
+  'Peaceful': ['Keep the evening gentle if you can', 'Try a few minutes of stretching or reading', 'Notice what is helping you feel settled'],
+  'Angry': ['Pause before responding while the feeling is intense', 'Write out what you want to say without sending it yet', 'Take a short walk or try slow breathing', 'Wait before making decisions if you can'],
+  'Lonely': ['Message or call one person, even if it feels small', 'Spend time somewhere welcoming with people around', 'Read or watch something that feels like company'],
+  'Stressed': ['Write a list of what is on your mind, then choose one small next step', 'Take a short break away from the screen', 'Try slow breathing: in for 4, out for 6', 'Ask someone for help with one thing'],
+  'Frustrated': ['Step away from the problem for a few minutes', 'Write down what is bothering you and what you can change', 'Try again with one small adjustment when you feel ready'],
+  'Excited': ['Enjoy having something to look forward to', 'Tell someone what you are excited about', 'Write down an idea you want to remember'],
+  'Grateful': ['Write down a couple of things you appreciate', 'Tell someone you are glad they are in your life', 'Notice one small thing that made today better'],
+  'Confident': ['Take one step towards something that matters to you', 'Remember a challenge you have handled before', 'Notice your progress without needing to be perfect'],
+  'Hopeful': ['Write down one thing you would like to work towards', 'Choose a small action you can take today', 'Talk to someone who encourages you'],
+  'Bored': ['Try a small activity you have not done in a while', 'Put on a song and change your surroundings', 'Message someone or get outside for a little while'],
+  'Proud': ['Give yourself credit for the effort you put in', 'Write down what you learned from the experience', 'Share the win with someone who will appreciate it'],
+  'Curious': ['Look up something you have wondered about', 'Ask a question or try a new activity', 'Write down what you discover']
+};
+
+export const FOOD_TAGS = ['Proper meal', 'Snack', 'Cooked it myself', 'Tried something new', 'Breakfast', 'Fruit', 'Drank water', 'Protein-y'];
+
+// How you woke up. The third item is the quilt pattern family it sews with:
+// rested = soft round patterns, okay = tidy ones, groggy = wavy ones. Old nights keep their word and their patch.
+export const FEELS = [
+  ['refreshed', 'Refreshed', 'rested'],
+  ['rested', 'Rested', 'rested'],
+  ['okay', 'Okay', 'okay'],
+  ['tired', 'Tired', 'okay'],
+  ['groggy', 'Groggy', 'groggy'],
+  ['restless', 'Restless', 'groggy']
 ];
+
+export const feelFamily = k => (FEELS.find(f => f[0] === k) || [0, 0, 'okay'])[2];
+export const feelLabel = k => (FEELS.find(f => f[0] === k) || [k, k ? k[0].toUpperCase() + k.slice(1) : ''])[1];
+
+export const NIGHT_THINGS = ['Washed the dishes', 'Laptop work', 'Read', 'Just lay there', 'Had a snack', 'Scrolled for a bit'];
