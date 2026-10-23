@@ -1,4 +1,5 @@
-// Settings: everything that isn't about you. Your name and words, the look, your data, starting fresh.
+
+ // Settings: everything that isn't about you. Your name and words, the look, your data, starting fresh.
 import { get, save, exportJSON, isPersisted, today, reset, backupDue, dateKey, checkBackup, BACKUP_PROBLEMS, restoreBackup, hasData, undoInfo, undoRestore } from '../store.js';
 import { esc, nav, backLink, toast, openSheet, closeSheet, downloadFile } from '../ui.js';
 import { dayDate, clock } from '../pdf.js';
@@ -13,6 +14,7 @@ export function mount(root) {
     let b;
 
     if (t.closest('[data-pin]')) { pinSheet(root); return; }
+    if (t.closest('[data-fuel-goals]')) { fuelGoalsSheet(root); return; }
     if (t.closest('[data-export]')) { backup(root); return; }
     if (t.closest('[data-fresh]')) { startFresh(root); return; }
 
@@ -356,6 +358,44 @@ function pinSheet(root) {
   if (first) first.focus();
 }
 
+// ---------- Daily calorie and protein goals ----------
+function fuelGoalsSheet(root) {
+  const targets = get().fuelTargets || {};
+  const calories = Number(targets.calories) || 2000;
+  const protein = Number(targets.protein) || 100;
+
+  const html =
+    '<h2>Nutrition goals</h2>' +
+    '<p class="muted">Set daily targets for your food summary. These are tracking settings, not medical advice.</p>' +
+    '<label class="field-label" for="fuelCalories">DAILY CALORIE GOAL</label>' +
+    '<input id="fuelCalories" type="number" min="1" max="20000" step="50" value="' + calories + '" style="width:100%">' +
+    '<label class="field-label" for="fuelProtein">DAILY PROTEIN GOAL (GRAMS)</label>' +
+    '<input id="fuelProtein" type="number" min="1" max="1000" step="5" value="' + protein + '" style="width:100%">' +
+    '<p id="fuelGoalError" class="muted" role="status"></p>' +
+    '<button type="button" class="btn" data-fuel-save>Save goals</button>' +
+    '<button type="button" class="btn alt" data-close>Cancel</button>';
+
+  const sheet = openSheet(html, ev => {
+    if (!ev.target.closest('[data-fuel-save]')) return;
+
+    const c = Number(sheet.querySelector('#fuelCalories').value);
+    const p = Number(sheet.querySelector('#fuelProtein').value);
+    const error = sheet.querySelector('#fuelGoalError');
+
+    if (!Number.isFinite(c) || c < 1 || c > 20000 ||
+        !Number.isFinite(p) || p < 1 || p > 1000) {
+      error.textContent = 'Enter a calorie goal from 1 to 20,000 and a protein goal from 1 to 1,000 grams.';
+      return;
+    }
+
+    get().fuelTargets = { calories: Math.round(c), protein: Math.round(p) };
+    save();
+    closeSheet();
+    toast('Nutrition goals saved.');
+    render(root);
+  });
+}
+
 function render(root) {
   const st = get();
   const s = st.settings;
@@ -380,6 +420,10 @@ function render(root) {
       '<small class="rowsub">' +
       (lockEnabled() ? 'A PIN is enabled on this browser' : 'Optional lock when opening Prequel') +
       '</small></span><b>›</b></button>' +
+    '<button type="button" class="rowlink" data-fuel-goals style="width:100%"><span>' +
+      'Calorie and protein goals' +
+      '<small class="rowsub">Set or change your daily nutrition goals</small>' +
+      '</span><b>›</b></button>' +
     '<div class="lbl">Your data</div>' +
     (undoInfo()
       ? '<div class="card undocard"><b>Your data from before the restore is safe</b><p class="muted" style="font-size:14px;margin:0">When you restored a backup on ' +

@@ -1,3 +1,4 @@
+
 import { get } from '../store.js';
 import { EXERCISES, AREAS } from '../data.js';
 import { esc, nav, him, prettyDate } from '../ui.js';
@@ -40,7 +41,8 @@ export function mount(root) {
     }
 
     if ((b = t.closest('[data-wx]'))) {
-      b.closest('.chartwrap').querySelector('.readout').textContent = b.dataset.wx;
+      const readout = b.closest('.chartwrap')?.querySelector('.readout');
+      if (readout) readout.textContent = b.dataset.wx;
       return;
     }
   });
@@ -64,7 +66,6 @@ function render(root) {
     g.kind === 'own' ? AREAS.goal.colour : (COL[g.source] || AREAS.win.colour);
 
   const goal = g => {
-    // A tick-off goal has no number: it is either done or not yet.
     if (g.tick) {
       return '<button type="button" class="goal" data-goal="' + g.id + '">' +
         '<span class="lbl" style="text-transform:none;letter-spacing:0">' + esc(g.name) + '</span>' +
@@ -110,7 +111,6 @@ function render(root) {
   const wins = st.moments.filter(m => m.area === 'win').length;
   const lanterns = st.mind.filter(n => n.letGo).length;
 
-  // Look-backs: your heaviest ever and fun totals.
   const best = {};
   let lifted = 0;
 
@@ -196,7 +196,6 @@ function render(root) {
             '</small></span></button>'
         ).join('') + '</div>'
       : '') +
-    // Counts for activities that have been recorded.
     (() => {
       const ids = [...new Set((st.activities || []).map(a => a.type))];
       const c = (st.sessions.length
@@ -266,8 +265,5 @@ function render(root) {
     (looks.length
       ? looks.map(l => '<div class="lookback" style="background:' + l[0] + '">' + esc(l[1]) + '</div>').join('')
       : '') +
-    '<a class="rowlink" href="#/insights" style="width:100%">' +
-      '<span>Insights<small class="rowsub">Patterns across your mood, rest, food and movement logs</small></span><b>›</b>' +
-    '</a>' +
     nav('me');
 }
