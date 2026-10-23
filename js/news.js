@@ -6,23 +6,32 @@ import { dayDate } from './pdf.js';
 // Keep each release number aligned with VERSION in sw.js.
 export const NEWS = [
   {
+    v: 60,
+    date: '2026-10-23',
+    items: [
+      'Set or change your daily calorie and protein goals in Settings.',
+      'Your food summary compares your logged nutrition with the goals you choose.',
+      'The Me page has a cleaner layout, with the extra Insights link removed.',
+      'The weather ribbon has been updated to handle renamed weather labels.'
+    ]
+  },
+  {
     v: 59,
     date: '2026-10-22',
     items: [
       'Food and Move now work together to show a daily summary of calories, protein and movement.',
-      'You can set your own daily calorie and protein targets and track your progress throughout the day.',
-      'You can manually record your daily step count.',
+      'You can set daily calorie and protein targets and track your progress throughout the day.',
       'Your movement and workout activity appears alongside your food log, helping you review your day in one place.'
     ]
   },
   {
-  v: 58,
-  date: '2026-10-18',
-  items: [
-    'Food and movement now share a clearer daily view.',
-    'Your movement and workout activity is displayed alongside your food log.'
-  ]
-},
+    v: 58,
+    date: '2026-10-18',
+    items: [
+      'Food and movement now share a clearer daily view.',
+      'Your movement and workout activity is displayed alongside your food log.'
+    ]
+  },
   {
     v: 57,
     date: '2026-10-22',
@@ -270,6 +279,7 @@ export function openNews(entries, all) {
     ev => {
       if (ev.target.closest('[data-allnews]')) {
         const sh = sheet.querySelector('.sheet');
+
         if (sh) {
           sh.innerHTML = fullList();
           sh.scrollTop = 0;

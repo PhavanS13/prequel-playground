@@ -22,7 +22,6 @@ import * as settings from './screens/settings.js';
 import * as share from './screens/share.js';
 import * as vent from './screens/vent.js';
 import { closeSheet, setLogDate, esc, reduceMotion } from './ui.js';
-import { fuelCardHtml, bindFuelCard } from './fuel.js';
 
 const ROUTES = {
   home,
@@ -73,17 +72,6 @@ function route() {
   root = next;
 
   screen.mount(root, params);
-
-  // Shared Food + Move summary.
-  if (name === 'food' || name === 'move') {
-    const panel = document.createElement('div');
-    panel.innerHTML = fuelCardHtml();
-
-    if (panel.firstElementChild) {
-      root.prepend(panel.firstElementChild);
-      bindFuelCard(root);
-    }
-  }
 
   if (!params.keepScroll) window.scrollTo(0, 0);
 }
