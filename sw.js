@@ -1,7 +1,6 @@
-
- // Offline support: the app opens even with no signal.
+// Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v60';
+const VERSION = 'prequel-v61';
 
 const SHELL = [
   './',
@@ -20,7 +19,6 @@ const SHELL = [
   'js/charts.js',
   'js/nutrition.js',
   'js/quotesoftheday.js',
-  'js/fuel.js',
   'data/foods.json',
 
   // App screens
@@ -101,9 +99,7 @@ self.addEventListener('install', event => {
     caches.open(VERSION)
       .then(cache =>
         cache.addAll(
-          SHELL.map(url =>
-            new Request(url, { cache: 'reload' })
-          )
+          SHELL.map(url => new Request(url, { cache: 'reload' }))
         )
       )
       .then(() => self.skipWaiting())
@@ -133,44 +129,32 @@ self.addEventListener('fetch', event => {
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
-
             caches.open(VERSION).then(cache => {
               cache.put('index.html', copy);
             });
           }
-
           return response;
         })
         .catch(() => caches.match('index.html'))
     );
-
     return;
   }
 
   event.respondWith(
     caches.open(VERSION).then(async cache => {
-      const cached = await cache.match(
-        event.request,
-        { ignoreSearch: true }
-      );
-
+      const cached = await cache.match(event.request, { ignoreSearch: true });
       const network = fetch(event.request)
         .then(response => {
           if (
             response &&
             response.ok &&
-            (
-              response.type === 'basic' ||
-              response.type === 'cors'
-            )
+            (response.type === 'basic' || response.type === 'cors')
           ) {
             cache.put(event.request, response.clone());
           }
-
           return response;
         })
         .catch(() => cached);
-
       return cached || network;
     })
   );

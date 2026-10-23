@@ -1,8 +1,44 @@
-
- // Kind charts: only ones that can't go down, or that have no good or bad.
+// Kind charts: only ones that can't go down, or that have no good or bad.
 import { dateKey, parseKey, today } from './store.js';
 import { esc, prettyDate } from './ui.js';
-import { weatherByName } from './data.js';
+import { WEATHERS } from './data.js';
+
+// Match current names without depending on exact capitalisation, and retain
+// colours for several names used by older versions of the app.
+const WEATHER_ALIASES = {
+  annoyed: 'Frustrated',
+  irritated: 'Frustrated',
+  anger: 'Angry',
+  loneliness: 'Lonely',
+  stress: 'Stressed',
+  'burnt-out': 'Burnt out',
+  burnout: 'Burnt out'
+};
+
+const WEATHER_BY_NORMALISED_NAME = new Map(
+  WEATHERS.map(weather => [String(weather[0]).trim().toLowerCase(), weather])
+);
+
+// If an old or custom label no longer exists in the current list, give it a
+// stable colour based on its name instead of making every unknown label blue.
+const UNKNOWN_WEATHER_COLOURS = [
+  '#8A70C9', '#D06C91', '#4F9E91', '#C77B43', '#597FC0',
+  '#A36B9D', '#6F9A54', '#BA805A', '#527D91', '#B45B54'
+];
+
+function weatherColour(name) {
+  const label = String(name ?? '').trim();
+  const key = label.toLowerCase();
+  const canonical = WEATHER_ALIASES[key] || label;
+  const weather = WEATHER_BY_NORMALISED_NAME.get(canonical.toLowerCase());
+  if (weather && weather[2]) return weather[2];
+
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash + key.charCodeAt(i)) | 0;
+  }
+  return UNKNOWN_WEATHER_COLOURS[Math.abs(hash) % UNKNOWN_WEATHER_COLOURS.length];
+}
 
 // ---------- the hill: a count that only ever climbs. A break is a flat stretch, never a drop. ----------
 export function hill(dates, colour, unit) {
@@ -67,45 +103,37 @@ export function wireHills(root) {
 export function ribbon(weather) {
   const byDay = {};
 
-  weather.slice().sort((a, b) => a.ts - b.ts).forEach(w => {
-    const types = Array.isArray(w.types) ? w.types : [];
-    byDay[w.date] = (byDay[w.date] || []).concat(types);
+  (Array.isArray(weather) ? weather : []).forEach(entry => {
+    if (!entry || !entry.date) return;
+    const types = Array.isArray(entry.types) ? entry.types : [];
+    byDay[entry.date] = (byDay[entry.date] || []).concat(types);
   });
 
   const days = Object.keys(byDay).sort().slice(-60);
-
   if (days.length < 3) {
     return '<p class="empty" style="margin:0">Log the weather inside on a few days and your ribbon starts weaving.</p>';
   }
 
-  const W = 320, H = 54, w = W / days.length;
-  const aliases = {
-    'Annoyed': 'Frustrated',
-    'Irritated': 'Frustrated',
-    'Anger': 'Angry',
-    'Loneliness': 'Lonely',
-    'Stress': 'Stressed'
-  };
-
+  const W = 320, H = 54, stripeWidth = W / days.length;
   let rects = '';
 
-  days.forEach((d, i) => {
-    const types = Array.from(new Set(byDay[d])).filter(Boolean).slice(-2);
-    const safeTypes = types.length ? types : ['Mixed'];
-    const h = H / safeTypes.length;
+  days.forEach((day, i) => {
+    const types = Array.from(new Set(byDay[day]
+      .filter(type => typeof type === 'string')
+      .map(type => type.trim())
+      .filter(Boolean))).slice(-2);
+    const labels = types.length ? types : ['Mixed'];
+    const stripeHeight = H / labels.length;
 
-    safeTypes.forEach((t, j) => {
-      const currentName = aliases[t] || t;
-      const mood = weatherByName(currentName);
-      const colour = mood ? mood[2] : '#9FB8E8';
-
-      rects += '<rect x="' + (i * w).toFixed(2) +
-        '" y="' + (j * h).toFixed(2) +
-        '" width="' + (w + 0.4).toFixed(2) +
-        '" height="' + (h + 0.4).toFixed(2) +
+    labels.forEach((type, j) => {
+      const colour = weatherColour(type);
+      const label = esc(prettyDate(day) + ' · ' + labels.join(' + '));
+      rects += '<rect x="' + (i * stripeWidth).toFixed(2) +
+        '" y="' + (j * stripeHeight).toFixed(2) +
+        '" width="' + (stripeWidth + 0.4).toFixed(2) +
+        '" height="' + (stripeHeight + 0.4).toFixed(2) +
         '" fill="' + colour +
-        '" data-wx="' + esc(prettyDate(d) + ' · ' + safeTypes.join(' + ')) +
-        '"/>';
+        '" data-wx="' + label + '"/>';
     });
   });
 
