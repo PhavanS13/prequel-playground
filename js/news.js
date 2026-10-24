@@ -2,43 +2,9 @@
 import { esc, openSheet, him } from './ui.js';
 import { dayDate } from './pdf.js';
 
-// What's new: newest releases first.
-// Keep each release number aligned with VERSION in sw.js.
+// What's new: a few plain lines for every update, newest first.
+// Each release number matches VERSION in sw.js.
 export const NEWS = [
-  {
-    v: 60,
-    date: '2026-10-23',
-    items: [
-      'Set or change your daily calorie and protein goals in Settings.',
-      'Your food summary compares your logged nutrition with the goals you choose.',
-      'The Me page has a cleaner layout, with the extra Insights link removed.',
-      'The weather ribbon has been updated to handle renamed weather labels.'
-    ]
-  },
-  {
-    v: 59,
-    date: '2026-10-22',
-    items: [
-      'Food and Move now work together to show a daily summary of calories, protein and movement.',
-      'You can set daily calorie and protein targets and track your progress throughout the day.',
-      'Your movement and workout activity appears alongside your food log, helping you review your day in one place.'
-    ]
-  },
-  {
-    v: 58,
-    date: '2026-10-18',
-    items: [
-      'Food and movement now share a clearer daily view.',
-      'Your movement and workout activity is displayed alongside your food log.'
-    ]
-  },
-  {
-    v: 57,
-    date: '2026-10-22',
-    items: [
-      'You can now optionally set a PIN lock in Settings.'
-    ]
-  },
   {
     v: 56,
     date: '2026-10-22',
@@ -54,7 +20,7 @@ export const NEWS = [
     items: [
       'A new Breather section on Home gives you a few gentle ways to take a break.',
       'Try slow breathing, following a comfortable four-second inhale and six-second exhale.',
-      'Use the 5-senses grounding activity or try a tiny focus reset when you want to turn your attention to something else.'
+      'Use the 5-senses grounding activity to notice what is around you, or try a tiny focus reset when you want to turn your attention to something else.'
     ]
   },
   {
@@ -87,26 +53,26 @@ export const NEWS = [
     date: '2026-10-18',
     items: [
       'Four new weathers: Angry, Lonely, Stressed and Annoyed.',
-      'Tap any weather and you will see "Things that might help", with ideas for that feeling.',
-      'New on Mind: Vent. Write it all out, and it is saved just for you. You can read it back or delete it any time.',
+      'Tap any weather and you\'ll see "Things that might help", a few ideas for that feeling, like talking to someone, a quick workout or slow breathing.',
+      'New on Mind: Vent. Write it all out, and it\'s saved just for you. You can read it back or delete it any time, and nobody else sees it.',
       'Home has a "Today\'s thought", a new quote every day.',
-      'Goals on Me can now be ticked off when you have done them.',
-      'A new Minesweeper game is available under Skate on Home.'
+      'Goals on Me can now be ticked off when you\'ve done them. A small win, counted.',
+      'New little game: Minesweeper. On a soft day, find it under Skate on Home. Tap Clear to open a square, or Flag to mark where you think a mine is hiding.'
     ]
   },
   {
     v: 50,
     date: '2026-10-18',
     items: [
-      'You can now change or remove a log right on Move.',
-      'Gym sessions can also be edited or removed directly from Move.'
+      'You can now change or remove a log right on Move. Tap an activity to see its recent logs, or tap anything in "Lately", then Edit or Remove.',
+      'Gym sessions too: open one and tap "Fix this workout" or "Remove". No more trips to Days for it.'
     ]
   },
   {
     v: 49,
     date: '2026-10-17',
     items: [
-      'Kickboxing and MMA are on Move now, with options for activity type, rounds and round length.',
+      'Kickboxing and MMA are on Move now. Kickboxing logs pads, bag work, sparring or class, rounds and round length. MMA logs striking, grappling, wrestling, sparring or class, and rounds.',
       '"Lately" on Move now shows your most recent days first.'
     ]
   },
@@ -114,40 +80,40 @@ export const NEWS = [
     v: 48,
     date: '2026-10-17',
     items: [
-      'Move now supports activities such as walks, runs, badminton, football, swimming, yoga and custom activities.',
-      'Each activity can record relevant details, such as games, goals, laps or distance.',
-      'You can log an activity or tap "Start now" to track its duration.',
-      '"How\'s the body?" now sits at the top of Move.',
-      'You can set your own milestones for each activity.',
-      'This is a first version. Tell Phavan what is missing.'
+      'Move is now for every kind of moving: walks, runs, badminton, football, swimming, yoga and more, plus anything of your own. The gym is one of them, just like before.',
+      'Each activity logs what matters for it, like games played, goals, laps or distance. All of it optional, plus a "highlight of the day".',
+      'Log one you did, or tap "Start now" and Prequel keeps time for you, even if you close the app.',
+      '"How\'s the body?" now sits at the top of Move, for whatever you do today.',
+      'No more set "road to 100". Give any activity a milestone of your own: sessions, hours, km, games, goals, whatever you like.',
+      'This is a first version. Tell Phavan what\'s missing.'
     ]
   },
   {
     v: 47,
     date: '2026-10-17',
     items: [
-      'The sleep diary has a new "Week by week" table showing typical rest, typical night, nights you woke, and your shortest to longest day.'
+      'The sleep diary has a new "Week by week" table: typical rest, typical night, nights you woke, and your shortest to longest day, for each week. Handy for seeing if things are changing.'
     ]
   },
   {
     v: 46,
     date: '2026-10-17',
     items: [
-      'A private period tracker is available if you want it. Turn it on in Days → + → Cycle.',
-      'Tap a day to mark it as a period day. Additional details are optional.',
-      'After a couple of periods, Prequel estimates when the next one might start. It is only an estimate.',
-      'The tracker stays on your phone and does not appear on share cards.'
+      'New, and only if you want it: a private period tracker. Turn it on in Days → ＋ → Cycle.',
+      'Tap a day to mark it as a period day. How much and how you felt are there if you want them.',
+      'After a couple of periods, Prequel gently estimates when the next one might start. It\'s just an estimate.',
+      'It stays on your phone. No stars in the sky, nothing on share cards. This is a first version, and what you think will shape the next one.'
     ]
   },
   {
     v: 45,
     date: '2026-10-17',
     items: [
-      'The Awake card now has "Breathe with me", a slow breathing exercise.',
-      '"Put it down for the morning" lets you write down what is on your mind.',
-      'You can record what woke you, in your own words, if you want to.',
-      'Choose how you woke up and add notes if you like.',
-      '"Notes for your doctor" on Rest lets you record notes with the day and time.',
+      'Awake in the night? The Awake card now has "Breathe with me", a slow in-and-out to follow for as long as you like.',
+      '"Put it down for the morning": write down what\'s on your mind, and it waits on Mind until morning, so your head doesn\'t have to hold it.',
+      'When you head back to sleep, you can say what woke you, in your own words. Only if you want to.',
+      'Six ways to say how you woke up: Refreshed, Rested, Okay, Tired, Groggy or Restless. Add a few words of your own if you like. Your quilt still sews them in.',
+      '"Notes for your doctor" on Rest: jot things down, and they go into your sleep diary with the day and time.',
       'After a rough night, Move might gently suggest a Yellow day. You still choose.'
     ]
   },
@@ -155,40 +121,40 @@ export const NEWS = [
     v: 44,
     date: '2026-10-15',
     items: [
-      'The update window now shows only the latest update. "See all updates" opens the complete list.'
+      'This window now shows just the latest update. If you missed a few, "See all updates" opens the whole list right here.'
     ]
   },
   {
     v: 43,
     date: '2026-10-15',
     items: [
-      'You can mark a weight as "Not noted", choose "Bar only", or use "Body weight".',
-      'Exercises can use "Body weight × reps", so you only need to enter reps.',
-      'Each exercise has a menu to change its measurement, reorder it or remove it.',
-      'In Days, you can correct details in a past workout.',
-      'You can copy a completed session, and Move shows your latest workout.'
+      'Forgot to check the weight? Tap "Not noted" under the weight box. There\'s also "Bar only" and "Body weight".',
+      'Exercises you do with your own body weight can be set to "Body weight × reps", so you only type reps. Prequel offers to fix your old 0 kg sets too.',
+      'Each exercise has a ⋯ button: change how you measure it, fix the order you did things in, or remove it if you added it by mistake.',
+      'In Days, you can fix a past workout: mark a weight as not noted, put exercises in the right order, and more.',
+      'When you finish a session, you can copy it straight away. Move now shows just your last workout, with all the others one tap away.'
     ]
   },
   {
     v: 42,
     date: '2026-10-15',
     items: [
-      'Move remembers the order you completed exercises in.',
-      'Your next session shows "Last time" with the previous exercise order.',
-      'Sessions live on Move. Open one to view it or copy it into another app.',
-      'Rest has one "Awake for a bit?" button to record when you wake and return to sleep.',
-      'The "0 patches" message no longer appears on Rest before your first night.'
+      'Move remembers the order you really did your exercises in. The exercise buttons get little numbers as you go.',
+      'Next time you do the same workout, you\'ll see "Last time" with the order you went in. Nothing gets rearranged.',
+      'Your sessions now live on Move. Tap one to see it, and Copy it to paste into any other app.',
+      'Rest has one "Awake for a bit?" button at night instead of the list of chips. Tap it when you\'re up, and again when you head back to sleep. It shows up in your sleep diary.',
+      'No more "0 patches" on Rest before your first night.'
     ]
   },
   {
     v: 41,
     date: '2026-10-15',
     items: [
-      'Each new jar holds a randomly chosen number of stars.',
-      'Jars come in different shapes and sizes.',
-      'Paper stars come in different sizes too.',
-      'A full jar gets an animation as it is sealed and added to your shelf.',
-      'You can bring back a lantern you released by mistake or retrieve one later.',
+      'Every new jar secretly holds 20 to 40 stars, so you never quite know when it will fill.',
+      'Jars come in shapes now: a little jam jar, a tall mason jar or a big cookie jar. The bigger the jar, the more stars it holds.',
+      'The paper stars come in different sizes.',
+      'A full jar gets a proper moment: the lid screws on, the stars swirl, and it floats onto your shelf. Jars that filled before this get theirs the next time you open the jar.',
+      'Let a lantern go by mistake? Tap "Bring it back" straight away, or call it back any time from "Lanterns you\'ve let go".',
       'Sticky notes on Mind are readable again in Cosy dark.'
     ]
   },
@@ -196,43 +162,43 @@ export const NEWS = [
     v: 40,
     date: '2026-10-15',
     items: [
-      'After each update, Prequel tells you what is new, just once.',
-      'You can read all updates again in Settings → What\'s new.'
+      'This little window. After each update, Prequel tells you what\'s new, just once.',
+      'You can read it all again any time in Settings → What\'s new.'
     ]
   },
   {
     v: 39,
     date: '2026-10-15',
     items: [
-      'On Android, reports and share cards have a "Save to this phone" button.',
-      'Sharing your quilt in the middle of a month now shows a whole quilt.'
+      'On Android, reports and share cards now have a "Save to this phone" button, so PDFs and pictures land in your Downloads.',
+      'Sharing your quilt in the middle of a month now shows a whole quilt, not a half-finished one.'
     ]
   },
   {
     v: 38,
     date: '2026-10-14',
     items: [
-      'Restoring a backup is safer, with the file contents shown beside the current app data.',
-      'After a restore, Prequel keeps a copy of your old data for seven days.',
-      'Damaged backup files are rejected without changing the app.',
-      '"Last backup" only updates when a backup was actually saved.'
+      'Restoring a backup is safer. Prequel shows what\'s in the file next to what\'s in the app, and warns you if the backup is older.',
+      'After a restore, Prequel keeps a copy of your old data for 7 days, so you can undo it.',
+      'A damaged backup file is refused, and nothing in the app changes.',
+      '"Last backup" only counts when a backup was really saved.'
     ]
   },
   {
     v: 37,
     date: '2026-10-14',
     items: [
-      'You cannot log things for days that have not happened yet.',
-      'The food page shows your top five usuals, with the rest in an "All your usuals" sheet.',
-      'Move has a quick session option for tracking sets, reps or completed activities.',
-      'Reports say "not yet" instead of creating an empty PDF when nothing has been logged.'
+      'You can\'t log things for days that haven\'t happened yet. Prequel gently takes you back to today.',
+      'The food page shows your top 5 usuals, with the rest in an "All your usuals" sheet.',
+      'Quick session on Move: start without a plan, and track sets and reps or just tick what you did.',
+      'With nothing logged yet, reports kindly say "not yet" instead of making an empty PDF.'
     ]
   }
 ];
 
 export const LATEST = NEWS[0].v;
 
-// Render one block per update.
+// One block per update: the date in words, then its lines.
 export function newsHtml(entries) {
   return entries.map(n =>
     '<div class="newsday"><div class="lbl">' +
@@ -243,6 +209,8 @@ export function newsHtml(entries) {
   ).join('');
 }
 
+// After an update, show only the latest one.
+// If more were missed, "See all updates" opens the full list.
 const head = title =>
   '<div class="newshead">' +
   him('letter', 'pop', 'Your character holding a note') +
@@ -261,17 +229,12 @@ export function openNews(entries, all) {
   }
 
   const missed = entries.length - 1;
-
   const sheet = openSheet(
     head('A few new things') +
-    '<div class="newslist">' +
-    newsHtml(entries.slice(0, 1)) +
-    '</div>' +
+    '<div class="newslist">' + newsHtml(entries.slice(0, 1)) + '</div>' +
     (missed > 0
       ? '<div class="newsmore"><p>You also missed ' + missed +
-        (missed === 1
-          ? ' earlier update.'
-          : ' earlier updates.') +
+        (missed === 1 ? ' earlier update.' : ' earlier updates.') +
         '</p><button type="button" class="btn alt" data-allnews>See all updates</button></div>'
       : '') +
     '<p class="muted newswhere">Every update stays in Settings → What\'s new.</p>' +
@@ -279,11 +242,8 @@ export function openNews(entries, all) {
     ev => {
       if (ev.target.closest('[data-allnews]')) {
         const sh = sheet.querySelector('.sheet');
-
-        if (sh) {
-          sh.innerHTML = fullList();
-          sh.scrollTop = 0;
-        }
+        sh.innerHTML = fullList();
+        sh.scrollTop = 0;
       }
     }
   );

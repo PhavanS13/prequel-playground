@@ -1,9 +1,10 @@
 // Food: log what you ate in a tap, see what it gave you. Nutrition is an estimate, never a score.
 import { get, save, uid, addMoment, removeById, today } from '../store.js';
-import { esc, nav, backLink, dateChip, logDate, timeOf, prettyDate, toast, openSheet, closeSheet } from '../ui.js';
+import { esc, nav, backLink, dateChip, logDate, him, timeOf, prettyDate, toast, openSheet, closeSheet } from '../ui.js';
 import { openFoodReport } from '../reports.js';
-import { GRAIN, wordHit, NUTRIENTS, KINDS, loadDB, myFoods, meals, weights, fromDB, adoptDB, bestMeasure, logFood, totalOf, qtyLabel, fmt, search, recipeTotals, ingredientSearch } from '../nutrition.js';
+import { GRAIN, wordHit, NUTRIENTS, KINDS, loadDB, myFoods, meals, weights, fromDB, adoptDB, bestMeasure, logFood, totalOf, sumDay, qtyLabel, fmt, search, recipeTotals, ingredientSearch } from '../nutrition.js';
 
+const EMPTY = ['Eat away!', 'Snack o\'clock?', 'Feed the machine.', 'Bon appétit!', 'Tummy\'s calling.', 'Let\'s eat!', 'Fuel up, friend.'];
 let root = null, query = '', linkTo = null, snackTimer = null, dbReady = false;
 
 export function mount(r) {
@@ -53,10 +54,15 @@ function dayList() {
 
 function render() {
   const d = logDate(), list = dayList();
+  const S = sumDay(list.filter(x => x.m).map(x => x.m));
+  const mealsN = list.length;
   const allU = allUsuals(), usuals = allU.slice(0, TOP_USUALS);
   const lastW = weights().slice().sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts)[0];
   root.innerHTML =
     '<div class="top">' + backLink() + dateChip() + '</div>' +
+    '<button type="button" class="foodhead" data-totals>' + him('eating', 'breathe', 'Your character eating with you') +
+      '<span><small>' + esc(prettyDate(d)) + '</small><b>' + (mealsN ? mealsN + (mealsN === 1 ? ' thing' : ' things') + ' eaten' : EMPTY[new Date().getDate() % EMPTY.length]) + '</b>' +
+      '<em>' + (S.counted ? '~' + Math.round(S.t[0]).toLocaleString() + ' cal · ' + Math.round(S.t[1]) + ' g protein ›' : 'Anything counts. A banana counts.') + '</em></span></button>' +
     '<div class="fsearch"><label class="sr" for="fq">What did you have?</label><input id="fq" type="search" placeholder="What did you have?" autocomplete="off" enterkeyhint="go" value="' + esc(query) + '"></div>' +
     '<div id="res"></div>' +
     (usuals.length ? '<div class="top usualshead"><div class="lbl">Your usuals · tap to log</div><button type="button" class="btn ghost" data-manage style="min-height:34px;padding:0 4px">Edit</button></div><div class="reslist usuals">' + usuals.map(usualRow).join('') +
@@ -116,6 +122,7 @@ function onClick(e) {
   if ((b = t.closest('[data-usual]'))) { const f = myFoods().find(x => x.id === b.dataset.usual); if (f) { const m = logFood(f, logDate()); finishLog(m, f); } return; }
   if ((b = t.closest('[data-meal]'))) { portionSheet(b.dataset.meal); return; }
   if ((b = t.closest('[data-delold]'))) { removeById('foods', b.dataset.delold); render(); return; }
+  if (t.closest('[data-totals]')) { totalsSheet(); return; }
   if (t.closest('[data-label]')) { labelSheet(); return; }
   if (t.closest('[data-recipe]')) { recipeSheet(); return; }
   if (t.closest('[data-manage]')) { manageSheet(); return; }
@@ -360,6 +367,15 @@ function recipeSheet(editId) {
     drawList();
   });
   drawList();
+}
+
+// ---------- everything the day gave you ----------
+function totalsSheet() {
+  const list = dayList(), S = sumDay(list.filter(x => x.m).map(x => x.m));
+  openSheet('<h2>' + esc(prettyDate(logDate(), { weekday: 'long', day: 'numeric', month: 'long' })) + '</h2>' +
+    '<div class="nutable">' + NUTRIENTS.map((n, i) => '<div><span>' + n[1] + (S.has[i] && S.cnt[i] < S.counted ? '<small>from ' + S.cnt[i] + ' of ' + S.counted + ' foods</small>' : '') + '</span><b>' + (S.has[i] && Math.round(S.t[i] * 10) > 0 ? fmt(S.t[i], i) + ' ' + n[2] : '–') + '</b></div>').join('') + '</div>' +
+    '<p class="muted" style="font-size:13px;margin:0">Good estimates, not exact. ' + (S.blank ? S.blank + (S.blank === 1 ? ' thing has' : ' things have') + ' no numbers yet; tap it in the list to fill them in. ' : '') + 'Not every food in the lists has B12 or vitamin D, so those read low.</p>' +
+    '<button type="button" class="btn ghost" data-close>Close</button>', null);
 }
 
 // ---------- weight, whenever you get near a scale ----------

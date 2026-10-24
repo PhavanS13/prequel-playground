@@ -1,6 +1,7 @@
-// Offline support: the app opens even with no signal.
+
+ // Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v61';
+const VERSION = 'prequel-v56';
 
 const SHELL = [
   './',
@@ -10,7 +11,6 @@ const SHELL = [
 
   // Core app files
   'js/app.js',
-  'js/app-lock.js',
   'js/store.js',
   'js/data.js',
   'js/ui.js',
@@ -99,7 +99,9 @@ self.addEventListener('install', event => {
     caches.open(VERSION)
       .then(cache =>
         cache.addAll(
-          SHELL.map(url => new Request(url, { cache: 'reload' }))
+          SHELL.map(url =>
+            new Request(url, { cache: 'reload' })
+          )
         )
       )
       .then(() => self.skipWaiting())
@@ -123,38 +125,54 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
+  // Navigation: try the network first, then fall back to
+  // the cached app when offline.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
+
             caches.open(VERSION).then(cache => {
               cache.put('index.html', copy);
             });
           }
+
           return response;
         })
         .catch(() => caches.match('index.html'))
     );
+
     return;
   }
 
+  // Other resources: return cached content immediately
+  // when available and refresh it from the network.
   event.respondWith(
     caches.open(VERSION).then(async cache => {
-      const cached = await cache.match(event.request, { ignoreSearch: true });
+      const cached = await cache.match(
+        event.request,
+        { ignoreSearch: true }
+      );
+
       const network = fetch(event.request)
         .then(response => {
           if (
             response &&
             response.ok &&
-            (response.type === 'basic' || response.type === 'cors')
+            (
+              response.type === 'basic' ||
+              response.type === 'cors'
+            )
           ) {
             cache.put(event.request, response.clone());
           }
+
           return response;
         })
         .catch(() => cached);
+
       return cached || network;
     })
   );
