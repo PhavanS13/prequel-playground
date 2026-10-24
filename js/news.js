@@ -6,6 +6,14 @@ import { dayDate } from './pdf.js';
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
   {
+    v: 57,
+    date: '2026-10-24',
+    items: [
+      'The weather ribbon has been updated to use the current colours for your feelings.',
+      'Older logs using the name Frustrated are now matched to Annoyed, so they can use the updated colour too.'
+    ]
+  },
+  {
     v: 56,
     date: '2026-10-22',
     items: [

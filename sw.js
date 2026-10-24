@@ -1,7 +1,7 @@
 
  // Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v56';
+const VERSION = 'prequel-v57';
 
 const SHELL = [
   './',
