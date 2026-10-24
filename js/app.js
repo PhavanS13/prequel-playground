@@ -1,5 +1,5 @@
 
-import { load, get, save, today, dateKey, hasData } from './store.js';
+import { load, get, save, dateKey, hasData } from './store.js';
 import { NEWS, LATEST, openNews } from './news.js';
 import * as home from './screens/home.js';
 import * as weather from './screens/weather.js';

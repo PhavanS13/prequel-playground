@@ -5,6 +5,15 @@ import { dayDate } from './pdf.js';
 // What's new: a few plain lines for every update, newest first.
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
+    {
+    v: 58,
+    date: '2026-10-24',
+    items: [
+      'Me now has a weather history table instead of the weather ribbon.',
+      'Switch between the last week, two weeks or month to see how often you logged each weather.',
+      'Weather has a new PDF report with a summary and day-by-day check-ins.'
+    ]
+  },
   {
     v: 57,
     date: '2026-10-24',

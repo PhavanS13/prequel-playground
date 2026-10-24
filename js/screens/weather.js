@@ -1,54 +1,175 @@
+
 import { get, save, uid, addMoment, removeById } from '../store.js';
 import { WEATHERS, WEATHER_TIPS, weatherByName } from '../data.js';
 import { esc, nav, backLink, dateChip, logDate, timeOf, prettyDate } from '../ui.js';
+import { openWeatherReport } from '../weather-report.js';
 
 let picked = [], strength = 'steady', reply = '', lastName = '';
 
 export function mount(root) {
   render(root);
+
   root.addEventListener('click', e => {
     const t = e.target;
     let b;
+
     if ((b = t.closest('[data-w]'))) {
       const i = Number(b.dataset.w);
-      picked = picked.includes(i) ? picked.filter(x => x !== i) : [...picked, i].slice(-2);
-      render(root); return;
+      picked = picked.includes(i)
+        ? picked.filter(x => x !== i)
+        : [...picked, i].slice(-2);
+      render(root);
+      return;
     }
-    if ((b = t.closest('[data-s]'))) { strength = b.dataset.s; render(root); return; }
+
+    if ((b = t.closest('[data-s]'))) {
+      strength = b.dataset.s;
+      render(root);
+      return;
+    }
+
     if (t.closest('[data-log]')) {
       if (!picked.length) return;
-      const st = get(), date = logDate();
+
+      const st = get();
+      const date = logDate();
       const types = picked.map(i => WEATHERS[i][0]);
-      const entry = { id: uid(), date, ts: Date.now(), types, strength };
+      const entry = {
+        id: uid(),
+        date,
+        ts: Date.now(),
+        types,
+        strength
+      };
+
       st.weather.push(entry);
-      addMoment('mind', 'Weather: ' + types.join(' + ').toLowerCase() + ', ' + strength, date, { ref: entry.id });
+      addMoment(
+        'mind',
+        'Weather: ' + types.join(' + ').toLowerCase() + ', ' + strength,
+        date,
+        { ref: entry.id }
+      );
+
       reply = WEATHERS[picked[picked.length - 1]][4];
       lastName = types[types.length - 1];
-      picked = []; save(); render(root); return;
+      picked = [];
+
+      save();
+      render(root);
+      return;
     }
-    if ((b = t.closest('[data-del]'))) { removeById('weather', b.dataset.del); render(root); }
+
+    if ((b = t.closest('[data-del]'))) {
+      removeById('weather', b.dataset.del);
+      render(root);
+      return;
+    }
+
+    if (t.closest('[data-weather-report]')) {
+      openWeatherReport();
+    }
   });
 }
 
 function render(root) {
-  const st = get(), date = logDate();
-  const todays = st.weather.filter(w => w.date === date).sort((a, b) => a.ts - b.ts);
-  const focus = picked.length ? WEATHERS[picked[picked.length - 1]][0] : lastName;
+  const st = get();
+  const date = logDate();
+
+  const todays = st.weather
+    .filter(w => w.date === date)
+    .sort((a, b) => a.ts - b.ts);
+
+  const focus = picked.length
+    ? WEATHERS[picked[picked.length - 1]][0]
+    : lastName;
+
   const tips = (focus && WEATHER_TIPS[focus]) || [];
+
   root.innerHTML =
     '<div class="top">' + backLink() + dateChip() + '</div>' +
-    '<div><h1>What\'s the weather inside?</h1><p class="sub">Pick one, or mix two. Log as often as it changes. No weather is wrong.</p></div>' +
-    '<div class="wgrid">' + WEATHERS.map((w, i) =>
-      '<button type="button" class="tile" data-w="' + i + '" aria-pressed="' + picked.includes(i) + '"><span class="ic" style="background:' + w[2] + '22;color:' + w[2] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + w[3] + '</svg></span><span class="nm">' + w[0] + '</span><span class="hn">' + w[1] + '</span></button>').join('') + '</div>' +
+
+    '<div><h1>What\'s the weather inside?</h1>' +
+      '<p class="sub">Pick one, or mix two. Log as often as it changes. No weather is wrong.</p>' +
+    '</div>' +
+
+    '<div class="wgrid">' +
+      WEATHERS.map((w, i) =>
+        '<button type="button" class="tile" data-w="' + i +
+          '" aria-pressed="' + picked.includes(i) + '">' +
+          '<span class="ic" style="background:' + w[2] + '22;color:' + w[2] + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+              w[3] +
+            '</svg>' +
+          '</span>' +
+          '<span class="nm">' + esc(w[0]) + '</span>' +
+          '<span class="hn">' + esc(w[1]) + '</span>' +
+        '</button>'
+      ).join('') +
+    '</div>' +
+
     '<div class="card">' +
       '<div class="lbl">How strong</div>' +
-      '<div class="seg">' + ['light', 'steady', 'strong'].map(s => '<button type="button" data-s="' + s + '" aria-pressed="' + (strength === s) + '">' + s[0].toUpperCase() + s.slice(1) + '</button>').join('') + '</div>' +
-      '<button type="button" class="btn" data-log' + (picked.length ? '' : ' disabled') + '>' + (picked.length ? 'Log ' + esc(picked.map(i => WEATHERS[i][0].toLowerCase()).join(' + ')) : 'Pick a weather') + '</button>' +
-      (reply ? '<div class="say" style="color:var(--blue)">' + esc(reply) + '</div>' : '') +
+      '<div class="seg">' +
+        ['light', 'steady', 'strong'].map(s =>
+          '<button type="button" data-s="' + s +
+            '" aria-pressed="' + (strength === s) + '">' +
+            s[0].toUpperCase() + s.slice(1) +
+          '</button>'
+        ).join('') +
+      '</div>' +
+
+      '<button type="button" class="btn" data-log' +
+        (picked.length ? '' : ' disabled') + '>' +
+        (picked.length
+          ? 'Log ' + esc(picked.map(i => WEATHERS[i][0].toLowerCase()).join(' + '))
+          : 'Pick a weather') +
+      '</button>' +
+
+      (reply
+        ? '<div class="say" style="color:var(--blue)">' + esc(reply) + '</div>'
+        : '') +
     '</div>' +
-    (tips.length ? '<div class="card"><div class="lbl">Things that might help</div><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">' + tips.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' : '') +
-    '<div class="card"><div class="lbl">' + esc(prettyDate(date)) + ' so far</div>' +
-      (todays.length ? todays.map(w => '<div class="entry"><span class="t">' + timeOf(w.ts) + '</span><span class="wx-dots">' + w.types.map(n => '<i style="background:' + (weatherByName(n) || [0, 0, '#ccc'])[2] + '"></i>').join('') + '</span><span>' + esc(w.types.join(' + ')) + ', ' + esc(w.strength) + '</span><button type="button" class="x" data-del="' + w.id + '" aria-label="Remove this entry">×</button></div>').join('')
+
+    (tips.length
+      ? '<div class="card">' +
+          '<div class="lbl">Things that might help</div>' +
+          '<ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px">' +
+            tips.map(x => '<li>' + esc(x) + '</li>').join('') +
+          '</ul>' +
+        '</div>'
+      : '') +
+
+    '<div class="card">' +
+      '<div class="lbl">' + esc(prettyDate(date)) + ' so far</div>' +
+
+      (todays.length
+        ? todays.map(w =>
+            '<div class="entry">' +
+              '<span class="t">' + timeOf(w.ts) + '</span>' +
+              '<span class="wx-dots">' +
+                w.types.map(n =>
+                  '<i style="background:' +
+                    (weatherByName(n) || [0, 0, '#777A7D'])[2] +
+                  '"></i>'
+                ).join('') +
+              '</span>' +
+              '<span>' + esc(w.types.join(' + ')) + ', ' + esc(w.strength) + '</span>' +
+              '<button type="button" class="x" data-del="' + esc(w.id) +
+                '" aria-label="Remove this entry">×</button>' +
+            '</div>'
+          ).join('')
         : '<p class="empty">Nothing yet. Whenever you\'re ready.</p>') +
-    '</div>' + nav('home');
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="lbl">Weather reports</div>' +
+      '<p class="muted" style="font-size:13px;margin:0 0 12px">' +
+        'Make a PDF of your weather check-ins, with a summary and day-by-day breakdown.' +
+      '</p>' +
+      '<button type="button" class="btn alt wide" data-weather-report>' +
+        'Make a weather report' +
+      '</button>' +
+    '</div>' +
+
+    nav('home');
 }
