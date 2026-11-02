@@ -1,7 +1,7 @@
 
- // Offline support: the app opens even with no signal.
+// Offline support: the app opens even with no signal.
 // Change VERSION when you publish an update.
-const VERSION = 'prequel-v58';
+const VERSION = 'prequel-v59';
 
 const SHELL = [
   './',
@@ -25,6 +25,7 @@ const SHELL = [
   'js/screens/home.js',
   'js/screens/weather.js',
   'js/screens/move.js',
+  'js/screens/pushups.js',
   'js/screens/food.js',
   'js/screens/rest.js',
   'js/screens/wins.js',

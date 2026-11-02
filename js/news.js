@@ -6,6 +6,16 @@ import { dayDate } from './pdf.js';
 // Each release number matches VERSION in sw.js.
 export const NEWS = [
     {
+    v: 59,
+    date: '2026-11-02',
+    items: [
+      'A new Push ups programme is now available from Move.',
+      'Choose a push-up variation and a comfortable starting suggestion. The programme adapts gently based on how your sessions felt.',
+      'Your Push ups sessions are saved separately, and your recent progress appears as a chart in Me.',
+      'The Push ups page is included in offline support.'
+    ]
+  },
+    {
     v: 58,
     date: '2026-10-24',
     items: [

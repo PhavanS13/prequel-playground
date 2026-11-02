@@ -4,6 +4,7 @@ import { NEWS, LATEST, openNews } from './news.js';
 import * as home from './screens/home.js';
 import * as weather from './screens/weather.js';
 import * as move from './screens/move.js';
+import * as pushups from './screens/pushups.js';
 import * as food from './screens/food.js';
 import * as rest from './screens/rest.js';
 import * as wins from './screens/wins.js';
@@ -26,6 +27,7 @@ const ROUTES = {
   home,
   weather,
   move,
+  pushups,
   food,
   rest,
   wins,
@@ -63,7 +65,6 @@ function route() {
   if (current && current.unmount) current.unmount();
   current = screen;
 
-  // A fresh element per screen, so no screen's listeners leak into the next.
   const next = document.createElement('main');
   next.id = 'app';
   next.className = 'screen screen-' + (ROUTES[name] ? name : 'home');
@@ -76,7 +77,6 @@ function route() {
   if (!params.keepScroll) window.scrollTo(0, 0);
 }
 
-// Light, dark, or follow the phone.
 const darkQuery = window.matchMedia
   ? window.matchMedia('(prefers-color-scheme: dark)')
   : null;
@@ -100,8 +100,6 @@ if (darkQuery && darkQuery.addEventListener) {
 
 window.addEventListener('prequel-theme', applyTheme);
 
-// A soft hello: the first time you open the app each morning
-// (the day turns over at 5am), and again after 4 or more hours away.
 const AWAY = 4 * 3600 * 1000;
 const helloDay = () => dateKey(new Date(Date.now() - 5 * 3600 * 1000));
 
@@ -179,7 +177,6 @@ function hello() {
   setTimeout(go, reduceMotion ? 1400 : 2400);
 }
 
-// Coming back to the app counts too.
 document.addEventListener('visibilitychange', () => {
   const st = get();
   if (!st) return;
@@ -192,7 +189,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// What's new: show updates once, after the hello has gone.
 function whatsNew() {
   const st = get();
 
@@ -229,7 +225,6 @@ load().then(() => {
 });
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  // Reload once when a new version finishes installing.
   let reloaded = false;
   const hadController = !!navigator.serviceWorker.controller;
 
@@ -245,13 +240,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   }).then(reg => {
     reg.update();
 
-    // Check for updates whenever the app becomes visible again.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         reg.update().catch(() => {});
       }
     });
-  }).catch(() => {
-    // Offline support is a bonus.
-  });
+  }).catch(() => {});
 }

@@ -153,6 +153,89 @@ function weatherHistoryHtml(st) {
   '</div>';
 }
 
+function pushupChartHtml(st) {
+  const p = st.pushupChallenge;
+  const sessions = p && Array.isArray(p.sessions)
+    ? p.sessions
+        .filter(s => Number.isFinite(Number(s.reps)) && s.date)
+        .sort((a, b) => (a.date || '').localeCompare(b.date || '') ||
+          (Number(a.ts) || 0) - (Number(b.ts) || 0))
+        .slice(-10)
+    : [];
+
+  if (!sessions.length) {
+    return '<div class="card">' +
+      '<b>Push ups</b>' +
+      '<p class="muted" style="font-size:13px;margin:0">' +
+        'Your Push ups progress will appear here after you log your first session.' +
+      '</p>' +
+      '<a class="rowlink" href="#/pushups" style="width:100%">' +
+        '<span>Open Push ups</span><b>›</b></a>' +
+    '</div>';
+  }
+
+  const max = Math.max(1, ...sessions.map(s => Number(s.reps) || 0));
+  const left = 24, right = 296, top = 18, bottom = 94;
+  const step = sessions.length > 1
+    ? (right - left) / (sessions.length - 1)
+    : 0;
+
+  const points = sessions.map((s, i) => {
+    const reps = Number(s.reps) || 0;
+    const x = sessions.length > 1 ? left + i * step : 160;
+    const y = bottom - (reps / max) * (bottom - top);
+    return { x, y, reps, date: s.date };
+  });
+
+  const line = points.map(p => p.x + ',' + p.y).join(' ');
+
+  const dots = points.map(p =>
+    '<circle cx="' + p.x + '" cy="' + p.y +
+    '" r="4" fill="var(--blue)"></circle>' +
+    '<text x="' + p.x + '" y="' + Math.max(12, p.y - 9) +
+    '" text-anchor="middle" font-size="9" fill="currentColor">' +
+    p.reps + '</text>'
+  ).join('');
+
+  const labels = points.map(p => {
+    const label = p.date.slice(5);
+    return '<text x="' + p.x + '" y="112" text-anchor="middle" ' +
+      'font-size="9" fill="currentColor">' + esc(label) + '</text>';
+  }).join('');
+
+  const total = sessions.reduce((n, s) => n + (Number(s.reps) || 0), 0);
+
+  return '<div class="card">' +
+    '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center">' +
+      '<b>Push ups progress</b>' +
+      '<span class="muted" style="font-size:12px">' +
+        sessions.length + (sessions.length === 1 ? ' session' : ' sessions') +
+      '</span>' +
+    '</div>' +
+    '<div class="grid2">' +
+      '<div class="count"><b>' + total + '</b><span>reps logged in these sessions</span></div>' +
+      '<div class="count"><b>' + sessions[sessions.length - 1].reps +
+        '</b><span>reps in your latest session</span></div>' +
+    '</div>' +
+    '<div style="width:100%;overflow:hidden">' +
+      '<svg viewBox="0 0 320 122" role="img" aria-label="Push ups reps per session over time" style="display:block;width:100%;height:auto">' +
+        '<line x1="18" y1="' + bottom + '" x2="302" y2="' +
+          bottom + '" stroke="var(--line)" stroke-width="1"></line>' +
+        (sessions.length > 1
+          ? '<polyline points="' + line +
+            '" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>'
+          : '') +
+        dots + labels +
+      '</svg>' +
+    '</div>' +
+    '<p class="muted" style="font-size:12px;margin:0">' +
+      'Each point shows the reps you chose to log. This chart is a record, not a target.' +
+    '</p>' +
+    '<a class="rowlink" href="#/pushups" style="width:100%">' +
+      '<span>Open Push ups</span><b>›</b></a>' +
+  '</div>';
+}
+
 function render(root) {
   const st = get();
 
@@ -222,7 +305,6 @@ function render(root) {
   const wins = st.moments.filter(m => m.area === 'win').length;
   const lanterns = st.mind.filter(n => n.letGo).length;
 
-  // Look-backs: your heaviest ever, and fun totals.
   const best = {};
   let lifted = 0;
 
@@ -275,7 +357,7 @@ function render(root) {
     '<a class="gear" href="#/settings" aria-label="Settings">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
         '<circle cx="12" cy="12" r="3"/>' +
-        '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>' +
+        '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>' +
       '</svg></a>' +
 
     '<div class="hero">' +
@@ -335,6 +417,8 @@ function render(root) {
             '</b><span>' + esc(x[1]) + '</span></div>').join('') + '</div>'
         : '';
     })() +
+
+    pushupChartHtml(st) +
 
     (() => {
       const c = [

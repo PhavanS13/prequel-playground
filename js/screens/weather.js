@@ -2,7 +2,7 @@
 import { get, save, uid, addMoment, removeById } from '../store.js';
 import { WEATHERS, WEATHER_TIPS, weatherByName } from '../data.js';
 import { esc, nav, backLink, dateChip, logDate, timeOf, prettyDate } from '../ui.js';
-import { openWeatherReport } from '../weather-report.js';
+import { chooseWeatherReport } from '../weather-report.js';
 
 let picked = [], strength = 'steady', reply = '', lastName = '';
 
@@ -34,6 +34,7 @@ export function mount(root) {
       const st = get();
       const date = logDate();
       const types = picked.map(i => WEATHERS[i][0]);
+
       const entry = {
         id: uid(),
         date,
@@ -43,6 +44,7 @@ export function mount(root) {
       };
 
       st.weather.push(entry);
+
       addMoment(
         'mind',
         'Weather: ' + types.join(' + ').toLowerCase() + ', ' + strength,
@@ -66,7 +68,8 @@ export function mount(root) {
     }
 
     if (t.closest('[data-weather-report]')) {
-      openWeatherReport();
+      chooseWeatherReport();
+      return;
     }
   });
 }
