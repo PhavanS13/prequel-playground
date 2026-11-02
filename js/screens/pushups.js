@@ -1,110 +1,184 @@
 
-import { get, save, uid, today, addDays } from '../store.js';
-import { esc, nav, prettyDate, toast, openSheet, closeSheet } from '../ui.js';
+import { get, save, uid, today } from '../store.js';
+import { esc, nav, prettyDate, toast } from '../ui.js';
 
-const VARIATIONS = [
-  { id: 'wall', name: 'Wall push ups', detail: 'Standing, using a wall for support.' },
-  { id: 'incline', name: 'Incline push ups', detail: 'Hands on a stable raised surface.' },
-  { id: 'knee', name: 'Knee push ups', detail: 'A modified floor variation.' },
-  { id: 'standard', name: 'Standard push ups', detail: 'The usual floor variation.' }
+const DIFFICULTY = [
+  'Very easy',
+  'Easy',
+  'About right',
+  'Difficult',
+  'Very difficult'
 ];
 
-const MIN_TARGET = 1;
-const MAX_TARGET = 8;
+let root = null;
+let checkInOpen = false;
 
-function ensurePlan() {
+function ensureChallenge() {
   const st = get();
 
-  if (!st.pushupChallenge) {
+  if (!st.pushupChallenge || typeof st.pushupChallenge !== 'object') {
     st.pushupChallenge = {
-      started: false,
-      variation: '',
-      target: 3,
-      sessions: [],
-      paused: false
+      sessions: []
     };
+    save();
+    return st.pushupChallenge;
   }
 
-  if (!Array.isArray(st.pushupChallenge.sessions)) {
-    st.pushupChallenge.sessions = [];
+  const p = st.pushupChallenge;
+
+  if (!Array.isArray(p.sessions)) {
+    p.sessions = [];
+    save();
+    return p;
   }
 
-  return st.pushupChallenge;
+  // Convert older session-based entries into one daily total.
+  const grouped = new Map();
+
+  p.sessions
+    .filter(s => s && s.date)
+    .sort((a, b) => (a.ts || 0) - (b.ts || 0))
+    .forEach(s => {
+      const date = String(s.date);
+      const reps = Math.max(0, Number(s.reps) || 0);
+
+      if (!grouped.has(date)) {
+        grouped.set(date, {
+          id: s.id || uid(),
+          date,
+          reps: 0,
+          goal: null,
+          feedback: '',
+          checkedInAt: null
+        });
+      }
+
+      const day = grouped.get(date);
+      day.reps += reps;
+
+      if (s.feedback) {
+        day.feedback = s.feedback === 'Too difficult'
+          ? 'Difficult'
+          : s.feedback;
+      }
+
+      if (s.checkedInAt) {
+        day.checkedInAt = s.checkedInAt;
+      }
+
+      if (s.goal != null && day.goal == null) {
+        day.goal = Number(s.goal);
+      }
+    });
+
+  const normalised = [...grouped.values()]
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const changed =
+    normalised.length !== p.sessions.length ||
+    normalised.some((s, i) => {
+      const old = p.sessions[i];
+      return !old ||
+        old.date !== s.date ||
+        old.reps !== s.reps ||
+        old.feedback !== s.feedback;
+    });
+
+  if (changed) {
+    p.sessions = normalised;
+    save();
+  }
+
+  return p;
 }
 
-function variationName(id) {
-  const v = VARIATIONS.find(x => x.id === id);
-  return v ? v.name : 'Push ups';
-}
-
-function nextPracticeDate(lastDate) {
-  return addDays(lastDate || today(), 2);
-}
-
-function sortedSessions(p) {
+function sortedDays(p) {
   return [...p.sessions].sort((a, b) =>
-    (b.date || '').localeCompare(a.date || '')
+    b.date.localeCompare(a.date)
   );
 }
 
-function totals(p) {
-  return p.sessions.reduce((out, s) => {
-    out.total += 1;
-    out.reps += Number(s.reps) || 0;
-    return out;
-  }, { total: 0, reps: 0 });
+function findDay(p, date) {
+  return p.sessions.find(s => s.date === date) || null;
 }
 
-function setupHtml(p) {
-  const selected = p.variation || '';
-  const setupVariation = selected !== '';
+function suggestedGoal(p, date) {
+  const previous = p.sessions
+    .filter(s => s.date < date && s.feedback && s.reps > 0)
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
 
-  return '<div class="card">' +
-    '<div class="lbl">A flexible practice programme</div>' +
-    '<h1>Push ups</h1>' +
-    '<p class="muted">Build a comfortable routine at your own pace. There are no deadlines and no need to catch up on missed days.</p>' +
-    '<div class="lbl">Choose a variation</div>' +
-    '<div class="chips">' +
-      VARIATIONS.map(v =>
-        '<button type="button" class="chip small" data-variation="' + v.id +
-        '" aria-pressed="' + (selected === v.id) + '">' +
-        esc(v.name) + '</button>'
-      ).join('') +
-    '</div>' +
-    (selected
-      ? '<p class="muted">' +
-          esc(VARIATIONS.find(v => v.id === selected).detail) +
-        '</p>'
-      : '<p class="muted">Choose the version that feels comfortable for you.</p>'
-    ) +
-    '<div class="lbl">Starting suggestion</div>' +
-    '<div class="chips">' +
-      [1, 2, 3, 4, 5].map(n =>
-        '<button type="button" class="chip small" data-target="' + n +
-        '" aria-pressed="' + (p.target === n) + '">' + n + '</button>'
-      ).join('') +
-    '</div>' +
-    '<p class="muted">This is only a starting suggestion. You can change it whenever you need to.</p>' +
-    '<p class="muted" style="font-size:12px">Stop if you feel pain, dizziness or unwell. You never need to push through discomfort.</p>' +
-    '<button type="button" class="btn wide" data-begin' +
-      (!setupVariation ? ' disabled' : '') + '>Start Push ups</button>' +
-  '</div>';
+  if (!previous) return null;
+
+  let next = Number(previous.reps) || 0;
+
+  switch (previous.feedback) {
+    case 'Very easy':
+      next += 1;
+      break;
+
+    case 'Easy':
+      break;
+
+    case 'About right':
+      break;
+
+    case 'Difficult':
+      next = Math.max(1, next - 1);
+      break;
+
+    case 'Very difficult':
+      next = Math.max(1, next - 2);
+      break;
+
+    default:
+      return null;
+  }
+
+  return next;
+}
+
+function getOrCreateDay(p, date) {
+  let day = findDay(p, date);
+
+  if (!day) {
+    day = {
+      id: uid(),
+      date,
+      reps: 0,
+      goal: suggestedGoal(p, date),
+      feedback: '',
+      checkedInAt: null
+    };
+
+    p.sessions.push(day);
+  }
+
+  return day;
+}
+
+function totalReps(p) {
+  return p.sessions.reduce((sum, day) =>
+    sum + (Number(day.reps) || 0), 0
+  );
 }
 
 function historyHtml(p) {
-  const sessions = sortedSessions(p);
+  const days = sortedDays(p).filter(day => day.reps > 0);
 
-  if (!sessions.length) {
-    return '<p class="muted">Your completed sessions will appear here.</p>';
+  if (!days.length) {
+    return '<p class="muted">Your daily totals will appear here after you log your first push up.</p>';
   }
 
   return '<div class="actrecent">' +
-    sessions.slice(0, 12).map(s =>
+    days.slice(0, 14).map(day =>
       '<div class="mgrow">' +
         '<span>' +
-          esc(prettyDate(s.date)) +
-          '<small>' + s.reps + ' reps · ' + esc(s.feedback || 'Logged') +
-          (s.variation ? ' · ' + esc(variationName(s.variation)) : '') +
+          esc(prettyDate(day.date)) +
+          '<small>' +
+            day.reps + ' push ups' +
+            (day.feedback
+              ? ' · ' + esc(day.feedback)
+              : ' · No check-in yet') +
           '</small>' +
         '</span>' +
       '</div>'
@@ -112,255 +186,182 @@ function historyHtml(p) {
   '</div>';
 }
 
-function activeHtml(p, summary, last, due, isDue, target) {
-  const paused = p.paused;
-
+function difficultyHtml() {
   return '<div class="card">' +
-    '<div class="lbl">' + (paused ? 'Paused' : 'Your current plan') + '</div>' +
-    '<h2>' + esc(variationName(p.variation)) + '</h2>' +
-    '<p class="muted">Your suggested session is a guide, not a requirement.</p>' +
-    '<div class="grid2">' +
-      '<div class="count"><b>' + summary.total + '</b><span>sessions</span></div>' +
-      '<div class="count"><b>' + summary.reps + '</b><span>reps logged</span></div>' +
+    '<div class="lbl">End-of-day check-in</div>' +
+    '<h2>How did today’s total feel?</h2>' +
+    '<p class="muted">Your answer helps suggest a comfortable goal for tomorrow. There is no wrong answer.</p>' +
+    '<div class="chips">' +
+      DIFFICULTY.map(choice =>
+        '<button type="button" class="chip small" data-difficulty="' +
+          esc(choice) + '">' +
+          esc(choice) +
+        '</button>'
+      ).join('') +
     '</div>' +
-    (paused
-      ? '<p class="muted">Your programme is paused. Your previous sessions are saved.</p>' +
-        '<button type="button" class="btn wide" data-resume>Resume</button>'
-      : isDue
-        ? '<div class="lbl">Whenever you\'re ready</div>' +
-          '<h2>' + target + ' comfortable reps</h2>' +
-          '<p class="muted">Take your time. You can do fewer, change the variation or skip today.</p>' +
-          '<button type="button" class="btn wide" data-session>Log a session</button>'
-        : '<div class="lbl">Recovery time</div>' +
-          '<h2>Next suggested day: ' + esc(prettyDate(due)) + '</h2>' +
-          '<p class="muted">You have time to recover. There is no need to make up a session.</p>'
-    ) +
-    (last
-      ? '<p class="muted" style="font-size:12px">Last session: ' +
-          esc(prettyDate(last.date)) + ' · ' + last.reps + ' reps · ' +
-          esc(last.feedback) + '</p>'
-      : '') +
-    '<button type="button" class="btn alt wide" data-pause>' +
-      (paused ? 'Programme paused' : 'Pause programme') +
-    '</button>' +
-    '<button type="button" class="rowlink" data-change style="width:100%"><span>Change variation</span><b>›</b></button>' +
-    '<button type="button" class="rowlink" data-reset style="width:100%"><span>Start over</span><b>›</b></button>' +
-  '</div>' +
-
-  '<div class="card">' +
-    '<b>Your sessions</b>' +
-    historyHtml(p) +
+    '<button type="button" class="btn alt wide" data-cancel-checkin>Not now</button>' +
   '</div>';
 }
 
-function sessionSheet(p) {
-  let reps = p.target;
-  let feedback = 'About right';
+function mainHtml(p) {
+  const date = today();
+  const day = findDay(p, date);
+  const reps = day ? Number(day.reps) || 0 : 0;
+  const goal = day ? day.goal : suggestedGoal(p, date);
+  const checkedIn = Boolean(day && day.feedback);
+  const allTime = totalReps(p);
 
-  const draw = () =>
-    '<h2>Log a session</h2>' +
-    '<p class="muted">Record what you actually did. It does not have to match the suggestion.</p>' +
-    '<label class="field-label" for="puReps">REPS COMPLETED</label>' +
-    '<input id="puReps" type="number" min="0" max="200" step="1" value="' + reps + '">' +
-    '<div class="lbl">How did that feel?</div>' +
-    '<div class="chips">' +
-      ['Easy', 'About right', 'Too difficult'].map(f =>
-        '<button type="button" class="chip small" data-feedback="' + f +
-        '" aria-pressed="' + (feedback === f) + '">' + f + '</button>'
-      ).join('') +
+  return '<div class="card">' +
+    '<div class="lbl">' + esc(prettyDate(date)) + '</div>' +
+    '<h1>Push ups</h1>' +
+    '<p class="muted">A daily count-up tracker. Tap the button once each time you complete a push up. Every tap adds to today’s total.</p>' +
+
+    '<div class="count">' +
+      '<b>' + reps + '</b>' +
+      '<span>push ups today</span>' +
     '</div>' +
-    '<p class="muted">Your next suggestion will adjust gently based on your feedback.</p>' +
-    '<button type="button" class="btn wide" data-save-session>Save session</button>' +
-    '<button type="button" class="btn alt wide" data-close>Cancel</button>';
 
-  const sheet = openSheet(draw(), ev => {
-    const t = ev.target;
-    const fb = t.closest('[data-feedback]');
+    (goal == null
+      ? '<p class="muted">No daily goal yet. Log at your own pace and check in when you’re finished for the day.</p>'
+      : '<p class="muted">Suggested daily goal: <b>' + goal +
+        '</b>. This is flexible guidance, not a limit or a requirement.</p>'
+    ) +
 
-    if (fb) {
-      feedback = fb.dataset.feedback;
-      sheet.querySelector('.sheet').innerHTML = draw();
-      return;
-    }
+    '<button type="button" class="btn wide" data-add-one>+1 push up</button>' +
+    '<button type="button" class="btn alt wide" data-undo' +
+      (reps < 1 ? ' disabled' : '') +
+      '>Undo one</button>' +
 
-    if (!t.closest('[data-save-session]')) return;
+    (checkedIn
+      ? '<p class="muted">Today’s check-in: <b>' +
+          esc(day.feedback) +
+        '</b>. You can keep logging; adding or undoing a rep will reopen your check-in.</p>'
+      : reps > 0
+        ? '<button type="button" class="btn alt wide" data-finish-checkin>Finish today’s check-in</button>'
+        : '<p class="muted">Your end-of-day check-in will appear after you log a push up.</p>'
+    ) +
+  '</div>' +
 
-    const field = sheet.querySelector('#puReps');
-    const value = Number(field.value);
+  (checkInOpen && reps > 0 && !checkedIn
+    ? difficultyHtml()
+    : '') +
 
-    if (!Number.isInteger(value) || value < 0 || value > 200) {
-      field.focus();
-      toast('Enter a valid number of reps.');
-      return;
-    }
+  '<div class="card">' +
+    '<div class="lbl">Your progress</div>' +
+    '<div class="grid2">' +
+      '<div class="count"><b>' + allTime + '</b><span>total push ups</span></div>' +
+      '<div class="count"><b>' + p.sessions.filter(s => s.reps > 0).length +
+        '</b><span>days logged</span></div>' +
+    '</div>' +
+    '<p class="muted">Your progress is counted by day, not by individual sessions.</p>' +
+  '</div>' +
 
-    const session = {
-      id: uid(),
-      date: today(),
-      ts: Date.now(),
-      reps: value,
-      feedback,
-      variation: p.variation
-    };
+  '<div class="card">' +
+    '<b>Daily history</b>' +
+    historyHtml(p) +
+  '</div>' +
 
-    p.sessions.push(session);
-
-    if (feedback === 'Easy') {
-      p.target = Math.min(MAX_TARGET, p.target + 1);
-    } else if (feedback === 'Too difficult') {
-      p.target = Math.max(MIN_TARGET, p.target - 1);
-    }
-
-    save();
-    closeSheet();
-    toast('Session saved.');
-    renderPage();
-  });
+  '<div class="card">' +
+    '<p class="muted">Take breaks when you need them. You can stop at any time, and you never need to push through pain or discomfort. Your suggested goal can stay the same or go down.</p>' +
+  '</div>';
 }
-
-let root = null;
 
 function renderPage() {
   if (!root) return;
 
-  const p = ensurePlan();
-  const summary = totals(p);
-  const sessions = sortedSessions(p);
-  const last = sessions[0] || null;
-  const due = last ? nextPracticeDate(last.date) : today();
-  const isDue = !last || today() >= due;
+  const p = ensureChallenge();
 
   root.innerHTML =
     '<div class="top">' +
       '<div class="lbl">Move</div>' +
     '</div>' +
-    '<h1>Push ups</h1>' +
-    (!p.started
-      ? setupHtml(p)
-      : activeHtml(p, summary, last, due, isDue, p.target)
-    ) +
+    mainHtml(p) +
     nav('move');
-}
-
-function resetProgramme() {
-  const p = ensurePlan();
-
-  if (!p.resetArmed) {
-    p.resetArmed = true;
-    save();
-    toast('Tap Start over again to confirm.');
-    return;
-  }
-
-  p.started = false;
-  p.paused = false;
-  p.variation = '';
-  p.target = 3;
-  p.sessions = [];
-  delete p.resetArmed;
-
-  save();
-  renderPage();
 }
 
 export function mount(el) {
   root = el;
-  ensurePlan();
+  checkInOpen = false;
+
+  ensureChallenge();
   renderPage();
 
   root.addEventListener('click', ev => {
     const t = ev.target;
-    const variation = t.closest('[data-variation]');
-    const target = t.closest('[data-target]');
 
-    if (variation) {
-      const p = ensurePlan();
-      p.variation = variation.dataset.variation;
+    if (t.closest('[data-add-one]')) {
+      const p = ensureChallenge();
+      const day = getOrCreateDay(p, today());
+
+      day.reps = (Number(day.reps) || 0) + 1;
+
+      if (day.feedback) {
+        day.feedback = '';
+        day.checkedInAt = null;
+        toast('Count updated. Please check in again when you’re finished.');
+      }
+
       save();
       renderPage();
       return;
     }
 
-    if (target) {
-      const p = ensurePlan();
-      p.target = Number(target.dataset.target);
+    if (t.closest('[data-undo]')) {
+      const p = ensureChallenge();
+      const day = findDay(p, today());
+
+      if (!day || day.reps < 1) return;
+
+      day.reps -= 1;
+
+      if (day.feedback) {
+        day.feedback = '';
+        day.checkedInAt = null;
+        toast('Count updated. Please check in again when you’re finished.');
+      }
+
       save();
       renderPage();
       return;
     }
 
-    if (t.closest('[data-begin]')) {
-      const p = ensurePlan();
+    if (t.closest('[data-finish-checkin]')) {
+      checkInOpen = true;
+      renderPage();
+      return;
+    }
 
-      if (!p.variation) {
-        toast('Choose a variation first.');
+    if (t.closest('[data-cancel-checkin]')) {
+      checkInOpen = false;
+      renderPage();
+      return;
+    }
+
+    const choice = t.closest('[data-difficulty]');
+
+    if (choice) {
+      const p = ensureChallenge();
+      const day = findDay(p, today());
+
+      if (!day || day.reps < 1) {
+        checkInOpen = false;
+        renderPage();
         return;
       }
 
-      p.started = true;
-      p.paused = false;
-      delete p.resetArmed;
+      day.feedback = choice.dataset.difficulty;
+      day.checkedInAt = Date.now();
+
       save();
+      checkInOpen = false;
       renderPage();
-      return;
-    }
 
-    if (t.closest('[data-session]')) {
-      const p = ensurePlan();
-      if (!p.paused) sessionSheet(p);
-      return;
-    }
-
-    if (t.closest('[data-pause]')) {
-      const p = ensurePlan();
-      p.paused = !p.paused;
-      save();
-      renderPage();
-      toast(p.paused ? 'Programme paused.' : 'Programme resumed.');
-      return;
-    }
-
-    if (t.closest('[data-resume]')) {
-      const p = ensurePlan();
-      p.paused = false;
-      save();
-      renderPage();
-      return;
-    }
-
-    if (t.closest('[data-change]')) {
-      const p = ensurePlan();
-      openSheet(
-        '<h2>Change variation</h2>' +
-        '<p class="muted">Choose a comfortable version. Your previous sessions will stay saved.</p>' +
-        '<div class="chips">' +
-          VARIATIONS.map(v =>
-            '<button type="button" class="chip small" data-new-variation="' + v.id +
-            '" aria-pressed="' + (p.variation === v.id) + '">' +
-            esc(v.name) + '</button>'
-          ).join('') +
-        '</div>' +
-        '<button type="button" class="btn alt wide" data-close>Cancel</button>',
-        e => {
-          const b = e.target.closest('[data-new-variation]');
-          if (!b) return;
-
-          p.variation = b.dataset.newVariation;
-          save();
-          closeSheet();
-          renderPage();
-          toast('Variation updated.');
-        }
-      );
-      return;
-    }
-
-    if (t.closest('[data-reset]')) {
-      resetProgramme();
+      toast('Daily check-in saved.');
     }
   });
 }
 
 export function unmount() {
   root = null;
+  checkInOpen = false;
 }

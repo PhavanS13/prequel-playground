@@ -153,84 +153,141 @@ function weatherHistoryHtml(st) {
   '</div>';
 }
 
-function pushupChartHtml(st) {
-  const p = st.pushupChallenge;
-  const sessions = p && Array.isArray(p.sessions)
-    ? p.sessions
-        .filter(s => Number.isFinite(Number(s.reps)) && s.date)
-        .sort((a, b) => (a.date || '').localeCompare(b.date || '') ||
-          (Number(a.ts) || 0) - (Number(b.ts) || 0))
-        .slice(-10)
-    : [];
+function pushupDays(st) {
+  const sessions = st.pushupChallenge &&
+    Array.isArray(st.pushupChallenge.sessions)
+      ? st.pushupChallenge.sessions
+      : [];
 
-  if (!sessions.length) {
+  const byDate = new Map();
+
+  sessions.forEach(entry => {
+    if (!entry || !entry.date) return;
+
+    const reps = Number(entry.reps);
+
+    if (!Number.isFinite(reps) || reps < 0) return;
+
+    const current = byDate.get(entry.date) || {
+      date: entry.date,
+      reps: 0,
+      goal: null,
+      feedback: ''
+    };
+
+    current.reps += reps;
+
+    if (entry.goal !== null && entry.goal !== undefined &&
+        Number.isFinite(Number(entry.goal))) {
+      current.goal = Number(entry.goal);
+    }
+
+    if (entry.feedback) {
+      current.feedback = entry.feedback;
+    }
+
+    byDate.set(entry.date, current);
+  });
+
+  return [...byDate.values()]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-14);
+}
+
+function pushupChartHtml(st) {
+  const days = pushupDays(st);
+
+  if (!days.length) {
     return '<div class="card">' +
       '<b>Push ups</b>' +
       '<p class="muted" style="font-size:13px;margin:0">' +
-        'Your Push ups progress will appear here after you log your first session.' +
+        'Your daily Push ups progress will appear here after you log your first push up.' +
       '</p>' +
       '<a class="rowlink" href="#/pushups" style="width:100%">' +
         '<span>Open Push ups</span><b>›</b></a>' +
     '</div>';
   }
 
-  const max = Math.max(1, ...sessions.map(s => Number(s.reps) || 0));
-  const left = 24, right = 296, top = 18, bottom = 94;
-  const step = sessions.length > 1
-    ? (right - left) / (sessions.length - 1)
-    : 0;
+  const max = Math.max(1, ...days.map(day => day.reps));
+  const left = 24;
+  const right = 296;
+  const top = 18;
+  const bottom = 94;
 
-  const points = sessions.map((s, i) => {
-    const reps = Number(s.reps) || 0;
-    const x = sessions.length > 1 ? left + i * step : 160;
-    const y = bottom - (reps / max) * (bottom - top);
-    return { x, y, reps, date: s.date };
+  const points = days.map((day, i) => {
+    const x = days.length > 1
+      ? left + i * ((right - left) / (days.length - 1))
+      : 160;
+
+    const y = bottom - (day.reps / max) * (bottom - top);
+
+    return {
+      x,
+      y,
+      reps: day.reps,
+      date: day.date
+    };
   });
 
-  const line = points.map(p => p.x + ',' + p.y).join(' ');
+  const line = points.map(point =>
+    point.x + ',' + point.y
+  ).join(' ');
 
-  const dots = points.map(p =>
-    '<circle cx="' + p.x + '" cy="' + p.y +
+  const dots = points.map(point =>
+    '<circle cx="' + point.x + '" cy="' + point.y +
     '" r="4" fill="var(--blue)"></circle>' +
-    '<text x="' + p.x + '" y="' + Math.max(12, p.y - 9) +
+    '<text x="' + point.x + '" y="' + Math.max(12, point.y - 9) +
     '" text-anchor="middle" font-size="9" fill="currentColor">' +
-    p.reps + '</text>'
+    point.reps + '</text>'
   ).join('');
 
-  const labels = points.map(p => {
-    const label = p.date.slice(5);
-    return '<text x="' + p.x + '" y="112" text-anchor="middle" ' +
-      'font-size="9" fill="currentColor">' + esc(label) + '</text>';
+  const labels = points.map(point => {
+    const label = point.date.slice(5);
+
+    return '<text x="' + point.x + '" y="112" text-anchor="middle" ' +
+      'font-size="9" fill="currentColor">' +
+      esc(label) +
+      '</text>';
   }).join('');
 
-  const total = sessions.reduce((n, s) => n + (Number(s.reps) || 0), 0);
+  const total = days.reduce((sum, day) =>
+    sum + day.reps, 0
+  );
+
+  const latest = days[days.length - 1];
 
   return '<div class="card">' +
     '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center">' +
       '<b>Push ups progress</b>' +
       '<span class="muted" style="font-size:12px">' +
-        sessions.length + (sessions.length === 1 ? ' session' : ' sessions') +
+        days.length + (days.length === 1 ? ' day' : ' days') +
       '</span>' +
     '</div>' +
+
     '<div class="grid2">' +
-      '<div class="count"><b>' + total + '</b><span>reps logged in these sessions</span></div>' +
-      '<div class="count"><b>' + sessions[sessions.length - 1].reps +
-        '</b><span>reps in your latest session</span></div>' +
+      '<div class="count"><b>' + total +
+        '</b><span>push ups across these days</span></div>' +
+      '<div class="count"><b>' + latest.reps +
+        '</b><span>push ups on your latest logged day</span></div>' +
     '</div>' +
+
     '<div style="width:100%;overflow:hidden">' +
-      '<svg viewBox="0 0 320 122" role="img" aria-label="Push ups reps per session over time" style="display:block;width:100%;height:auto">' +
+      '<svg viewBox="0 0 320 122" role="img" aria-label="Daily push ups totals over time" style="display:block;width:100%;height:auto">' +
         '<line x1="18" y1="' + bottom + '" x2="302" y2="' +
           bottom + '" stroke="var(--line)" stroke-width="1"></line>' +
-        (sessions.length > 1
+        (days.length > 1
           ? '<polyline points="' + line +
             '" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>'
           : '') +
-        dots + labels +
+        dots +
+        labels +
       '</svg>' +
     '</div>' +
+
     '<p class="muted" style="font-size:12px;margin:0">' +
-      'Each point shows the reps you chose to log. This chart is a record, not a target.' +
+      'Each point represents your total push ups for one day. This is your history, not a score.' +
     '</p>' +
+
     '<a class="rowlink" href="#/pushups" style="width:100%">' +
       '<span>Open Push ups</span><b>›</b></a>' +
   '</div>';
